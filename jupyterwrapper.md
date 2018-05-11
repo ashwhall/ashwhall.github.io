@@ -23,5 +23,5 @@ Eg. To trigger a restart with an external ip address of `27.121.21.55` and port 
 </center>
 
 ### Download
-The standalone application can be downloaded here: [jupyter_wrapper.zip](/download/jupyer_wrapper.zip).   
+The standalone application can be downloaded here: [jupyter_wrapper.zip](/download/jupyter_wrapper.zip).   
 _Note: Chrome may issue a warning when downloading this file. Please ignore this warning and feel free to run a virus scan._
