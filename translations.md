@@ -1,5 +1,5 @@
 ---
-layout: nn-calcs
+layout: translations
 title: Translations
 subtitle: English &rarr; Spanish translations
 ---
