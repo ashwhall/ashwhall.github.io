@@ -23,6 +23,7 @@ description: Deep learning researcher
 
 # List of links in the navigation bar
 navbar-links:
+  Home: "index"
   About Me: "aboutme"
   Projects:
     - Beautiful Jekyll: "http://deanattali.com/beautiful-jekyll/"
