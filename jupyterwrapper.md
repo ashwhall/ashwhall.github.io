@@ -19,6 +19,7 @@ Eg. To trigger a restart with an external ip address of `27.121.21.55` and port 
 
 ### What's it look like?
 <center>
+<a href="/img/scr1.png" alt="Screenshot 1"><img src="/img/scr1.png" /></a><a href="/img/scr2.png" alt="Screenshot 1"><img src="/img/scr2.png" /></a><a href="/img/scr3.png" alt="Screenshot 1"><img src="/img/scr3.png" /></a>
 [![Screenshot 1](/img/scr1.png){:width="300px"}](/img/scr1.png)[![Screenshot 2](/img/scr2.png){:width="300px"}](/img/scr2.png)[![Screenshot 3](/img/scr3.png){:width="300px"}](/img/scr3.png)
 </center>
 
