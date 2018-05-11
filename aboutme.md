@@ -10,7 +10,7 @@ I work as a deep-learning research assistant with [La Trobe University](https://
 ### History
 
 - __2017 - Present__ Deep learning research [La Trobe, AIS, Swimming Australia]
-- __2014 - Present__ Tutoring/demonstrating labs and tutorials [La Trobe University]
+- __2014 - Present__ Computer science lab and tutorial tutor/demonstrator  [La Trobe University]
 - __2013 - 2017__ Bachelor of Computer Science/Bachelor of Science (mathematics) [La Trobe University]
 
 ### Experience
