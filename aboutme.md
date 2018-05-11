@@ -23,3 +23,7 @@ I have experience with:
 - C++
 - SQL
 - React.js
+
+
+| <img src="./img/avatar-icon.png" width="60"/> | <img src="./img/avatar-icon.png" width="60"/> |
+| React.js | <img src="./img/avatar-icon.png" width="60"/> |
