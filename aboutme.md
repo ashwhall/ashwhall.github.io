@@ -17,6 +17,7 @@ I work as a deep-learning research assistant with [La Trobe University](https://
 - Machine learning
 - Deep learning
 - Python
+- Tensorflow
 - Java
 - C#
 - C++
