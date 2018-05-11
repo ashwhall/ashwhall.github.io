@@ -18,4 +18,4 @@ Once complete, visit the `ip:port` combination, with your desired command from `
 Eg. To trigger a restart with an external ip address of `27.121.21.55` and port number of `65000`, you would visit `http://27.121.21.55:65000/jupyter/restart`
 
 ### What's it look like?
-![Screenshot 1](/img/scr1.png){:width="100px"} ![Screenshot 2](/img/scr2.png){:width="100px"} ![Screenshot 3](/img/scr3.png){:width="100px"}
+(![Screenshot 1](/img/scr1.png){:width="300px"})[/img/scr1.png] (![Screenshot 2](/img/scr2.png){:width="300px"})[/img/scr2.png] (![Screenshot 3](/img/scr3.png){:width="300px"})[/img/scr3.png] 
