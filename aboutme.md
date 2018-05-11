@@ -14,7 +14,6 @@ I work as a deep-learning research assistant with [La Trobe University](https://
 - __2013 - 2017__ Bachelor of Computer Science/Bachelor of Science (mathematics) [La Trobe University]
 
 ### Experience
-I have experience with:
 - Machine learning
 - Deep learning
 - Python
@@ -23,7 +22,3 @@ I have experience with:
 - C++
 - SQL
 - React.js
-
-
-| <img src="./img/avatar-icon.png" width="60"/> | <img src="./img/avatar-icon.png" width="60"/> |
-| React.js | <img src="/img/avatar-icon.png" width="60"/> |
