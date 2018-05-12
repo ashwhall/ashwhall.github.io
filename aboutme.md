@@ -4,7 +4,7 @@ title: About me
 ---
 
 Hi, I'm Ash Hall. I'm doing an Honours Degree in Computer Science, studying meta-learning with convolutional neural networks for computer vision.
-I work as a deep-learning research assistant with [La Trobe University](https://www.latrobe.edu.au/), [The Australian Institute of Sport](https://www.ausport.gov.au/ais), and [Swimming Australia](https://www.swimming.org.au/home.aspx), and teach within the university.
+I'm currently developing a deep learning video analysis system for [La Trobe University](https://www.latrobe.edu.au/), [The Australian Institute of Sport](https://www.ausport.gov.au/ais), and [Swimming Australia](https://www.swimming.org.au/home.aspx), and teach within the university.
 
 
 ### History
