@@ -41,6 +41,11 @@ linkedin:
   baseURL: "https://linkedin.com/in/"
   icon: "fa-linkedin"
 
+gitlab:
+  name: "GitLab"
+  baseURL: "https://gitlab.com/"
+  icon: "fa-gitlab"
+
 xing:
   name: "Xing"
   baseURL: "https://www.xing.com/profile/"
