@@ -72,19 +72,19 @@ author:
 # If you want to add a new link that isn't here, you'll need to also edit the file _data/SocialNetworks.yml
 social-network-links:
   email: "ashwhall@gmail.com"
-  facebook: hallashw
-  github: ashwhall
-  twitter: ashwhall
+  telephone: (+61) 434464390
   gitlab: ashwhall
-#  google-plus: +DeanAttali
+  github: ashwhall
   linkedin: ashwhall
+  facebook: hallashw
+  twitter: ashwhall
+#  google-plus: +DeanAttali
 #  xing: yourname
 #  stackoverflow: "3943160/daattali"
 #  snapchat: deanat78
 #  instagram: deanat78
 #  youtube: user/deanat78
 #  spotify: yourname
-  telephone: (+61) 434464390
 #  steam: deanat78
 #  twitch: yourname
 #  yelp: yourname
