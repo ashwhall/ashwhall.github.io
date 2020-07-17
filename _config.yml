@@ -24,7 +24,8 @@ description: Developer / Deep Learner
 # List of links in the navigation bar
 navbar-links:
   Home: "index"
-  About Me: "aboutme"
+  Publications: "publications"
+  About: "about"
   Projects:
     - Jupyter Wrapper: "jupyterwrapper"
     - NN Calculators: "nncalcs"
