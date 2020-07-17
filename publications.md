@@ -46,3 +46,7 @@ _A method for distributed training of deep neural networks specifically designed
 	journal = {IEEE Transactions on Parallel and Distributed Systems}
 } 
 ```
+
+_______
+
+ORCID: https://orcid.org/0000-0002-0881-4098
