@@ -5,11 +5,11 @@ title: Publications
 
 ### Publications
 
+_______
+
 #### A new paradigm to do and understand the race analyses in swimming: The application of convolutional neural networks
-_Automated swimming analysis with convolutional neural networks on video data._
-
+_Automated swimming analysis with convolutional neural networks on video data._ \
 [Link](https://commons.nmu.edu/isbs/vol37/iss1/112/) | [PDF](/download/A_NEW_PARADIGM.pdf)
-
 ```
 @article{Elipot_2019,
 	url = {https://commons.nmu.edu/isbs/vol37/iss1/112/},
@@ -25,12 +25,11 @@ _Automated swimming analysis with convolutional neural networks on video data._
 }
 ```
 
+_______
 
 #### MPCA SGD—A Method for Distributed Training of Deep Learning Models on Spark
-_A method for distributed training of deep neural networks specifically designed to run in low-budget environments._
-
+_A method for distributed training of deep neural networks specifically designed to run in low-budget environments._ \
 [Link](https://ieeexplore.ieee.org/abstract/document/8354695) | [PDF](/download/TPDS_MPCA_SGD.pdf)
-
 ```
 @article{Langer_2018,
 	doi = {10.1109/tpds.2018.2833074},
@@ -49,4 +48,4 @@ _A method for distributed training of deep neural networks specifically designed
 
 _______
 
-ORCID: https://orcid.org/0000-0002-0881-4098
+[ORCID](https://orcid.org/0000-0002-0881-4098) | [Google Scholar](https://scholar.google.com/citations?user=zCj07uQAAAAJ)
