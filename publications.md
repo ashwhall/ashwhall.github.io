@@ -3,10 +3,6 @@ layout: page
 title: Publications
 ---
 
-### Publications
-
-_______
-
 #### A new paradigm to do and understand the race analyses in swimming: The application of convolutional neural networks
 _Automated swimming analysis with convolutional neural networks on video data._
 
