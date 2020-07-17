@@ -37,12 +37,12 @@ _A method for distributed training of deep neural networks specifically designed
 	url = {https://doi.org/10.1109%2Ftpds.2018.2833074},
 	year = 2018,
 	month = {nov},
-	publisher = {Institute of Electrical and Electronics Engineers ({IEEE})},
+	publisher = {Institute of Electrical and Electronics Engineers (IEEE)},
 	volume = {29},
 	number = {11},
 	pages = {2540--2556},
 	author = {Matthias Langer and Ashley Hall and Zhen He and Wenny Rahayu},
-	title = {{MPCA}~{SGD}{\textemdash}A Method for Distributed Training of Deep Learning Models on Spark},
-	journal = {{IEEE} Transactions on Parallel and Distributed Systems}
+	title = {MPCA SGD - A Method for Distributed Training of Deep Learning Models on Spark},
+	journal = {IEEE Transactions on Parallel and Distributed Systems}
 } 
 ```
