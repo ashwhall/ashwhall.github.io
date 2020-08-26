@@ -139,6 +139,7 @@ var main = {
 
 document.addEventListener('DOMContentLoaded', main.init);
 document.addEventListener('DOMContentLoaded', function() {
+	document.querySelector('html').minHeight = '100%';
 	const body = document.querySelector('body');
 	body.style.minHeight = '100%';
 	const canvas = document.createElement('canvas');
