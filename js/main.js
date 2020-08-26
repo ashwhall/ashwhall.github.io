@@ -140,7 +140,6 @@ var main = {
 document.addEventListener('DOMContentLoaded', main.init);
 document.addEventListener('DOMContentLoaded', function() {
 	const body = document.querySelector('body');
-	// const canvas = document.querySelector('#dot-canvas');
 	const canvas = document.createElement('canvas');
 	body.insertBefore(canvas, body.firstChild);
 	canvas.id = 'dot-canvas';
@@ -149,11 +148,12 @@ document.addEventListener('DOMContentLoaded', function() {
 	canvas.style.left = 0;
 	canvas.style.bottom = 0;
 	canvas.style.right = 0;
-	canvas.style.width = body.getBoundingClientRect().width;
-	canvas.style.height = body.getBoundingClientRect().height;
+	const { width, height } = body.getBoundingClientRect();
+	canvas.style.width = width;
+	canvas.style.height = height;
 	const ctx = canvas.getContext('2d');
-	canvas.width  = canvas.style.width;
-	canvas.height = canvas.style.height;
+	canvas.width = width;
+	canvas.height = height;
 	window.addEventListener('mousemove', updateMousePos, false);
 	let mousePos = [-1000, -1000];
 	const NUM_DOTS = 75;
