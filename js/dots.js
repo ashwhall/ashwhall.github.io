@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	const NUM_DOTS = 80;
 	const MIN_SPEED = 0.3;
 	const MAX_SPEED = 1;
-	const DOT_SIZE = 1;
+	const DOT_SIZE = 2;
 	const MAX_DIST = 100 ** 2;
 	const INFLUENCE_DISTANCE = 100;
 	const MOUSE_INFLUENCE_AMOUNT = 1 / 50;
