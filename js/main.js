@@ -140,8 +140,10 @@ var main = {
 document.addEventListener('DOMContentLoaded', main.init);
 document.addEventListener('DOMContentLoaded', function() {
 	const body = document.querySelector('body');
+	// const canvas = document.querySelector('#dot-canvas');
 	const canvas = document.createElement('canvas');
-
+	body.insertBefore(canvas, body.firstChild);
+	canvas.id = 'dot-canvas';
 	canvas.style.position = 'fixed';
 	canvas.style.top = 0;
 	canvas.style.left = 0;
@@ -149,14 +151,13 @@ document.addEventListener('DOMContentLoaded', function() {
 	canvas.style.right = 0;
 	canvas.style.width = '100%';
 	canvas.style.height = '100%';
-	body.insertBefore(canvas, body.firstChild);
-	// const canvas = document.querySelector('#canvas');
 	const ctx = canvas.getContext('2d');
 	canvas.width  = window.innerWidth;
 	canvas.height = window.innerHeight;
 	window.addEventListener('mousemove', updateMousePos, false);
 	let mousePos = [-1000, -1000];
-	const NUM_DOTS = 60;
+	const NUM_DOTS = 75;
+	const MIN_SPEED = 0.3;
 	const MAX_SPEED = 1;
 	const DOT_SIZE = 2;
 	const MAX_DIST = 100 ** 2;
@@ -166,9 +167,13 @@ document.addEventListener('DOMContentLoaded', function() {
 	const dots = [];
 	for (let i = 0; i < NUM_DOTS; i++) {
 	  const angle = Math.random() * Math.PI * 2;
+	  const speed = MIN_SPEED + Math.random() * (MAX_SPEED - MIN_SPEED);
 	  dots.push({
 	    position: [Math.random() * canvas.width, Math.random() * canvas.height],
-	    velocity: [Math.cos(angle) * Math.random() * MAX_SPEED, Math.sin(angle) * Math.random() * MAX_SPEED],
+	    velocity: [
+	      Math.cos(angle) * speed,
+	      Math.sin(angle) * speed,
+	    ],
 	  });
 	}
 
@@ -177,6 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	  var canvasMouseX = e.clientX - (canvas.offsetLeft - window.pageXOffset);
 	  var canvasMouseY = e.clientY - (canvas.offsetTop - window.pageYOffset);
 	  mousePos = [canvasMouseX, canvasMouseY];
+	  console.log(mousePos);
 	}
 	function influence(effectee, effector, amount) {
 	  if (effectee === effector) return;
