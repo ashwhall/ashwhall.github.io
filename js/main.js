@@ -152,8 +152,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	canvas.style.width = '100%';
 	canvas.style.height = '100%';
 	const ctx = canvas.getContext('2d');
-	canvas.width  = window.innerWidth;
-	canvas.height = window.innerHeight;
+	canvas.width  = canvas.getBoundingClientRect().width;
+	canvas.height = canvas.getBoundingClientRect().height;
 	window.addEventListener('mousemove', updateMousePos, false);
 	let mousePos = [-1000, -1000];
 	const NUM_DOTS = 75;
@@ -178,11 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	function updateMousePos(e) {
-	  const rect = canvas.getBoundingClientRect();
-	  var canvasMouseX = e.clientX - (canvas.offsetLeft - window.pageXOffset);
-	  var canvasMouseY = e.clientY - (canvas.offsetTop - window.pageYOffset);
-	  mousePos = [canvasMouseX, canvasMouseY];
-	  console.log(mousePos);
+	  mousePos = [e.clientX, e.clientY];
 	}
 	function influence(effectee, effector, amount) {
 	  if (effectee === effector) return;
