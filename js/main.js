@@ -152,8 +152,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	canvas.style.width = '100%';
 	canvas.style.height = '100%';
 	const ctx = canvas.getContext('2d');
-	canvas.width  = canvas.getBoundingClientRect().width;
-	canvas.height = canvas.getBoundingClientRect().height;
+	canvas.width  = body.getBoundingClientRect().width;
+	canvas.height = body.getBoundingClientRect().height;
 	window.addEventListener('mousemove', updateMousePos, false);
 	let mousePos = [-1000, -1000];
 	const NUM_DOTS = 75;
