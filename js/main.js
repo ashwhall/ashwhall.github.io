@@ -138,3 +138,95 @@ var main = {
 // 2fc73a3a967e97599c9763d05e564189
 
 document.addEventListener('DOMContentLoaded', main.init);
+document.addEventListener('DOMContentLoaded', function() {
+	const body = document.querySelector('body');
+	const canvas = document.createElement('canvas');
+
+	canvas.style.position = 'fixed';
+	canvas.style.top = 0;
+	canvas.style.left = 0;
+	canvas.style.bottom = 0;
+	canvas.style.right = 0;
+	canvas.style.width = '100%';
+	canvas.style.height = '100%';
+	body.insertBefore(canvas, body.firstChild);
+	// const canvas = document.querySelector('#canvas');
+	const ctx = canvas.getContext('2d');
+	canvas.width  = window.innerWidth;
+	canvas.height = window.innerHeight;
+	window.addEventListener('mousemove', updateMousePos, false);
+	let mousePos = [-1000, -1000];
+	const NUM_DOTS = 60;
+	const MAX_SPEED = 1;
+	const DOT_SIZE = 2;
+	const MAX_DIST = 100 ** 2;
+	const INFLUENCE_DISTANCE = 100;
+	const MOUSE_INFLUENCE_AMOUNT = 1 / 50;
+	const DOT_INFLUENCE_AMOUNT = 1 / 1000;
+
+	const dots = [];
+	for (let i = 0; i < NUM_DOTS; i++) {
+	  const angle = Math.random() * Math.PI * 2;
+	  dots.push({
+	    position: [Math.random() * canvas.width, Math.random() * canvas.height],
+	    velocity: [Math.cos(angle) * Math.random() * MAX_SPEED, Math.sin(angle) * Math.random() * MAX_SPEED],
+	  });
+	}
+
+	function updateMousePos(e) {
+	  const rect = canvas.getBoundingClientRect();
+	  mousePos = [e.clientX - rect.left, e.clientY - rect.top];
+	}
+	function influence(effectee, effector, amount) {
+	  if (effectee === effector) return;
+	  const mouseDist = Math.sqrt((effectee.position[0] - effector.position[0]) ** 2 + (effectee.position[1] - effector.position[1]) ** 2);
+	  const mouseInfluence = Math.min(10, Math.max(1, INFLUENCE_DISTANCE / mouseDist));
+	  if (mouseInfluence > 1) {
+	    effectee.velocity[0] += (effector.position[0] - effectee.position[0]) / mouseDist * mouseInfluence * amount;
+	    effectee.velocity[1] += (effector.position[1] - effectee.position[1]) / mouseDist * mouseInfluence * amount;
+	  }
+	}
+	function updateDot(dot) {
+	  influence(dot, { position: mousePos }, MOUSE_INFLUENCE_AMOUNT)
+	  dots.forEach(other => influence(dot, other, DOT_INFLUENCE_AMOUNT));
+	  dot.position = [
+	    (dot.position[0] + dot.velocity[0]) % canvas.width,
+	    (dot.position[1] + dot.velocity[1]) % canvas.height,
+	  ];
+	  if (dot.position[0] < 0) dot.position[0] = canvas.width;
+	  if (dot.position[1] < 1) dot.position[1] = canvas.height;
+	}
+	function lineBetween(l, r) {
+	  if (l === r) return;
+	  const dist = (l.position[0] - r.position[0]) ** 2 + (l.position[1] - r.position[1]) ** 2;
+	  if (dist < MAX_DIST) {
+	    ctx.beginPath();
+	    ctx.fillStyle = '';
+	    ctx.strokeStyle = `rgba(0, 0, 0, ${0.2 * (1 - dist / MAX_DIST)})`;
+	    ctx.lineWidth = 1;
+	    ctx.moveTo(l.position[0], l.position[1]);
+	    ctx.lineTo(r.position[0], r.position[1]);
+	    ctx.stroke();
+	  }
+	}
+	function drawDot(dot) {
+	  ctx.beginPath();
+	  ctx.arc(dot.position[0], dot.position[1], DOT_SIZE, 0, 2 * Math.PI, false);
+	  ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+	  ctx.fill();
+	  ctx.lineWidth = 5;
+	  dots.forEach(other => lineBetween(dot, other));
+	  lineBetween(dot, { position: mousePos });
+	}
+	function draw() {
+	  canvas.width  = window.innerWidth;
+	  canvas.height = window.innerHeight;
+	  ctx.fillStyle = '#FFF';
+	  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+	  dots.forEach(updateDot)
+	  dots.forEach(drawDot);
+	  window.requestAnimationFrame(draw);
+	}
+	draw();
+});
