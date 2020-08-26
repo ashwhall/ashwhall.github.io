@@ -149,11 +149,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	canvas.style.left = 0;
 	canvas.style.bottom = 0;
 	canvas.style.right = 0;
-	canvas.style.width = '100%';
-	canvas.style.height = '100%';
+	canvas.style.width = body.getBoundingClientRect().width;
+	canvas.style.height = body.getBoundingClientRect().height;
 	const ctx = canvas.getContext('2d');
-	canvas.width  = body.getBoundingClientRect().width;
-	canvas.height = body.getBoundingClientRect().height;
+	canvas.width  = canvas.style.width;
+	canvas.height = canvas.style.height;
 	window.addEventListener('mousemove', updateMousePos, false);
 	let mousePos = [-1000, -1000];
 	const NUM_DOTS = 75;
