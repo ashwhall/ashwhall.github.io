@@ -162,7 +162,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	const MAX_DIST = 100 ** 2;
 	const INFLUENCE_DISTANCE = 100;
 	const MOUSE_INFLUENCE_AMOUNT = 1 / 50;
-	const DOT_INFLUENCE_AMOUNT = 1 / 1000;
 
 	const dots = [];
 	for (let i = 0; i < NUM_DOTS; i++) {
@@ -175,7 +174,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	function updateMousePos(e) {
 	  const rect = canvas.getBoundingClientRect();
-	  mousePos = [e.clientX - rect.left, e.clientY - rect.top];
+	  var canvasMouseX = e.clientX - (canvas.offsetLeft - window.pageXOffset);
+	  var canvasMouseY = e.clientY - (canvas.offsetTop - window.pageYOffset);
+	  mousePos = [canvasMouseX, canvasMouseY];
 	}
 	function influence(effectee, effector, amount) {
 	  if (effectee === effector) return;
@@ -188,7 +189,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 	function updateDot(dot) {
 	  influence(dot, { position: mousePos }, MOUSE_INFLUENCE_AMOUNT)
-	  dots.forEach(other => influence(dot, other, DOT_INFLUENCE_AMOUNT));
 	  dot.position = [
 	    (dot.position[0] + dot.velocity[0]) % canvas.width,
 	    (dot.position[1] + dot.velocity[1]) % canvas.height,
