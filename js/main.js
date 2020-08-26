@@ -139,9 +139,9 @@ var main = {
 
 document.addEventListener('DOMContentLoaded', main.init);
 document.addEventListener('DOMContentLoaded', function() {
-	document.querySelector('html').style.minHeight = '100%';
+	const root = document.querySelector('html');
+	root.style.minHeight = '100%';
 	const body = document.querySelector('body');
-	body.style.minHeight = '100%';
 	const canvas = document.createElement('canvas');
 	body.insertBefore(canvas, body.firstChild);
 	canvas.id = 'dot-canvas';
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	canvas.style.left = 0;
 	canvas.style.bottom = 0;
 	canvas.style.right = 0;
-	const { width, height } = body.getBoundingClientRect();
+	const { width, height } = root.getBoundingClientRect();
 	canvas.style.width = width;
 	canvas.style.height = height;
 	const ctx = canvas.getContext('2d');
