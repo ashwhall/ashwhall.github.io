@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	canvas.width = width;
 	canvas.height = height;
 	window.addEventListener('mousemove', updateMousePos, false);
+	window.addEventListener('click', movePoint, false);
 	let mousePos = [-1000, -1000];
 	const NUM_DOTS = 80;
 	const MIN_SPEED = 0.3;
@@ -41,6 +42,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	function updateMousePos(e) {
 	  mousePos = [e.clientX, e.clientY];
+	}
+	function movePoint(e) {
+		dots.splice(0, 1);
+		  const angle = Math.random() * Math.PI * 2;
+	  const speed = MAX_SPEED * 3.5;
+		dots.push({
+	    position: [e.clientX + 1e-8, e.clientY + 1e-8],
+	    velocity: [
+	      Math.cos(angle) * speed,
+	      Math.sin(angle) * speed,
+	    ],
+	  });
 	}
 	function influence(effectee, effector, amount) {
 	  if (effectee === effector) return;
