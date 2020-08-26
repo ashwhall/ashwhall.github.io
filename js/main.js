@@ -140,6 +140,7 @@ var main = {
 document.addEventListener('DOMContentLoaded', main.init);
 document.addEventListener('DOMContentLoaded', function() {
 	const body = document.querySelector('body');
+	body.style.minHeight = '100%';
 	const canvas = document.createElement('canvas');
 	body.insertBefore(canvas, body.firstChild);
 	canvas.id = 'dot-canvas';
