@@ -67,11 +67,13 @@ document.addEventListener('DOMContentLoaded', function() {
 	function updateDot(dot) {
 	  influence(dot, { position: mousePos }, MOUSE_INFLUENCE_AMOUNT)
 	  dot.position = [
-	    (dot.position[0] + dot.velocity[0]) % canvas.width,
-	    (dot.position[1] + dot.velocity[1]) % canvas.height,
+	    dot.position[0] + dot.velocity[0],
+	    dot.position[1] + dot.velocity[1],
 	  ];
 	  if (dot.position[0] < 0) dot.position[0] = canvas.width;
-	  if (dot.position[1] < 1) dot.position[1] = canvas.height;
+	  else if (dot.position[0] > canvas.width) dot.position[0] = 0;
+	  if (dot.position[1] < 0) dot.position[1] = canvas.height;
+	  else if (dot.position[1] > canvas.height) dot.position[1] = 0;
 	}
 	function lineBetween(l, r) {
 	  if (l === r) return;
