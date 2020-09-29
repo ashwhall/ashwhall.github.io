@@ -1,0 +1,16 @@
+0 phlox
+1 rose
+2 calendula
+3 iris
+4 leucanthemum maximum
+5 campanula (bellflower)
+6 viola
+7 rudbeckia laciniata (Goldquelle)
+8 peony
+9 aquilegia
+10 rhododendron
+11 passiflora
+12 tulip
+13 water lily
+14 lilium
+15 veronica chamaedrys
