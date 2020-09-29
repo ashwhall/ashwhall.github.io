@@ -12,7 +12,25 @@ TRAIN_SPLIT = .8
 TRAIN_DIR = "train"
 TEST_DIR = "test"
 # *ordered* list of class names
-CLASS_NAMES = ["phlox", "rose", "calendula", "iris", "leucanthemum", "campanula", "viola", "rudbeckia", "peony", "aquilegia", "rhododendron", "passiflora", "tulip", "water", "lilium", "veronica"]
+CLASS_NAMES = [
+    "phlox",
+    "rose",
+    "calendula",
+    "iris",
+    "leucanthemum maximum",
+    "campanula (bellflower)",
+    "viola",
+    "rudbeckia laciniata (Goldquelle)",
+    "peony",
+    "aquilegia",
+    "rhododendron",
+    "passiflora",
+    "tulip",
+    "water lily",
+    "lilium",
+    "veronica chamaedrys"
+]
+
 
 os.makedirs(TRAIN_DIR)
 os.makedirs(TEST_DIR)
@@ -40,25 +58,26 @@ for cls, paths in images.items():
         cls_name = CLASS_NAMES[int(cls)] 
         print(f"{cls_name}: {len(train_paths)}/{len(test_paths)}")
         move(TRAIN_DIR, cls_name, train_paths)
-        move(TEST_DIR, clcls_names, test_paths)
+        move(TEST_DIR, cls_name, test_paths)
 ```
 
 And the outputs of that script:
 ```
 peony: 34/9
-rudbeckia: 14/4
+rudbeckia laciniata (Goldquelle): 14/4
 passiflora: 9/2
 phlox: 22/6
 aquilegia: 20/5
-campanula: 38/10
+campanula (bellflower): 38/10
 viola: 22/5
 rose: 33/8
 tulip: 15/4
-water: 9/2
+water lily: 9/2
 lilium: 8/2
 iris: 36/9
 rhododendron: 18/5
-leucanthemum: 19/5
-veronica: 10/2
+leucanthemum maximum: 19/5
+veronica chamaedrys: 10/2
 calendula: 3/1
+
 ```
