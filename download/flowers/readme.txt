@@ -11,16 +11,18 @@ import glob
 TRAIN_SPLIT = .8
 TRAIN_DIR = "train"
 TEST_DIR = "test"
+# *ordered* list of class names
+CLASS_NAMES = ["phlox", "rose", "calendula", "iris", "leucanthemum", "campanula", "viola", "rudbeckia", "peony", "aquilegia", "rhododendron", "passiflora", "tulip", "water", "lilium", "veronica"]
 
 os.makedirs(TRAIN_DIR)
 os.makedirs(TEST_DIR)
 
 images = {}
-def move(split, cls, paths):
-        dest_dir = os.path.join(split, cls)
-        os.makedirs(dest_dir)
-        for path in paths:
-                shutil.move(path, os.path.join(dest_dir, path))
+def move(split, cls_name, paths):
+    dest_dir = os.path.join(split, cls_name)
+    os.makedirs(dest_dir)
+    for path in paths:
+        shutil.move(path, os.path.join(dest_dir, path))
 
 images = {}
 for path in glob.glob("*.png"):
@@ -35,61 +37,28 @@ for cls, paths in images.items():
         split_idx = int(round(TRAIN_SPLIT * num_imgs))
         train_paths = paths[:split_idx]
         test_paths = paths[split_idx:]
-        print("Class:", cls)
-        print("  train count:", len(train_paths))
-        print("  test count :", len(test_paths))
-        move(TRAIN_DIR, cls, train_paths)
-        move(TEST_DIR, cls, test_paths)
+        cls_name = CLASS_NAMES[int(cls)] 
+        print(f"{cls_name}: {len(train_paths)}/{len(test_paths)}")
+        move(TRAIN_DIR, cls_name, train_paths)
+        move(TEST_DIR, clcls_names, test_paths)
 ```
 
 And the outputs of that script:
 ```
-Class: 02
-  train count: 18
-  test count : 4
-Class: 08
-  train count: 34
-  test count : 9
-Class: 07
-  train count: 14
-  test count : 4
-Class: 11
-  train count: 9
-  test count : 2
-Class: 00
-  train count: 22
-  test count : 6
-Class: 09
-  train count: 20
-  test count : 5
-Class: 05
-  train count: 38
-  test count : 10
-Class: 06
-  train count: 22
-  test count : 5
-Class: 01
-  train count: 33
-  test count : 8
-Class: 12
-  train count: 15
-  test count : 4
-Class: 13
-  train count: 9
-  test count : 2
-Class: 14
-  train count: 8
-  test count : 2
-Class: 03
-  train count: 36
-  test count : 9
-Class: 10
-  train count: 18
-  test count : 5
-Class: 04
-  train count: 19
-  test count : 5
-Class: 15
-  train count: 10
-  test count : 2
+peony: 34/9
+rudbeckia: 14/4
+passiflora: 9/2
+phlox: 22/6
+aquilegia: 20/5
+campanula: 38/10
+viola: 22/5
+rose: 33/8
+tulip: 15/4
+water: 9/2
+lilium: 8/2
+iris: 36/9
+rhododendron: 18/5
+leucanthemum: 19/5
+veronica: 10/2
+calendula: 3/1
 ```
