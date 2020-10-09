@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   function updateDot(dot) {
-    if (mousePos.x >= 0 && mousePos.y >= 0) {
+    if (mousePos.x >= 0 && mousePos.y >= 0 && mousePos.x < canvas.width && mousePos.y < canvas.height) {
       influence(dot, { position: mousePos }, MOUSE_INFLUENCE_AMOUNT)
     }
     dot.position = [
