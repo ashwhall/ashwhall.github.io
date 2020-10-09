@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
   canvas.width = width;
   canvas.height = height;
   window.addEventListener('mousemove', updateMousePos, false);
+  document.addEventListener('mouseleave', mouseLeave, false);
   window.addEventListener('click', movePoint, false);
   let mousePos = [-1000, -1000];
   const DOTS_PER_PX = 0.0001;
@@ -47,6 +48,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function updateMousePos(e) {
     mousePos = [e.clientX, e.clientY];
+    console.log('Back!');
+  }
+  function mouseLeave() {
+    mousePos = [-1000, -1000];
+    console.log('Gone!');
   }
   function movePoint(e) {
     dots.splice(0, 1);
@@ -70,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   function updateDot(dot) {
-    if (mousePos.x >= 0 && mousePos.y >= 0 && mousePos.x < canvas.width && mousePos.y < canvas.height) {
+    if (mousePos[0] >= 0 && mousePos[1] >= 0 && mousePos[0] < canvas.width && mousePos[1] < canvas.height) {
       influence(dot, { position: mousePos }, MOUSE_INFLUENCE_AMOUNT)
     }
     dot.position = [
@@ -123,7 +129,6 @@ document.addEventListener('DOMContentLoaded', function() {
     canvas.style.height = canvas.height;
     ctx.fillStyle = '#FFF';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     adjustDotCounts(canvas.width, canvas.height);
     dots.forEach(updateDot)
     dots.forEach(drawDot);
