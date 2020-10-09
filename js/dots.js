@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('click', movePoint, false);
   let mousePos = [-1000, -1000];
   const DOTS_PER_PX = 0.0001;
-  const NUM_DOTS = 80;
   const MIN_SPEED = 0.3;
   const MAX_SPEED = 1;
   const DOT_SIZE = 2;
@@ -51,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   function movePoint(e) {
     dots.splice(0, 1);
-      const angle = Math.random() * Math.PI * 2;
+    const angle = Math.random() * Math.PI * 2;
     const speed = MAX_SPEED * 3.5;
     dots.push({
       position: [e.clientX + 1e-8, e.clientY + 1e-8],
@@ -63,15 +62,17 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   function influence(effectee, effector, amount) {
     if (effectee === effector) return;
-    const mouseDist = Math.sqrt((effectee.position[0] - effector.position[0]) ** 2 + (effectee.position[1] - effector.position[1]) ** 2);
-    const mouseInfluence = Math.min(10, Math.max(1, INFLUENCE_DISTANCE / mouseDist));
-    if (mouseInfluence > 1) {
-      effectee.velocity[0] += (effector.position[0] - effectee.position[0]) / mouseDist * mouseInfluence * amount;
-      effectee.velocity[1] += (effector.position[1] - effectee.position[1]) / mouseDist * mouseInfluence * amount;
+    const dist = Math.sqrt((effectee.position[0] - effector.position[0]) ** 2 + (effectee.position[1] - effector.position[1]) ** 2);
+    const influenceAmount = Math.min(10, Math.max(1, INFLUENCE_DISTANCE / dist));
+    if (influenceAmount > 1) {
+      effectee.velocity[0] += (effector.position[0] - effectee.position[0]) / dist * influenceAmount * amount;
+      effectee.velocity[1] += (effector.position[1] - effectee.position[1]) / dist * influenceAmount * amount;
     }
   }
   function updateDot(dot) {
-    influence(dot, { position: mousePos }, MOUSE_INFLUENCE_AMOUNT)
+    if (mousePos.x >= 0 && mousePos.y >= 0) {
+      influence(dot, { position: mousePos }, MOUSE_INFLUENCE_AMOUNT)
+    }
     dot.position = [
       dot.position[0] + dot.velocity[0],
       dot.position[1] + dot.velocity[1],
@@ -104,25 +105,26 @@ document.addEventListener('DOMContentLoaded', function() {
     lineBetween(dot, { position: mousePos });
   }
   function adjustDotCounts(w, h) {
-          const newDotCount = numDots(w, h);
-          let missingDots = newDotCount - dots.length;
-          while(missingDots > 0) {
-              dots.push(generateDot(canvas.width, canvas.height));
-              missingDots--;
-          }
-          if(missingDots < 0) {
-            dots.splice(missingDots);
-          }
+    const newDotCount = numDots(w, h);
+    let missingDots = newDotCount - dots.length;
+    while(missingDots > 0) {
+      dots.push(generateDot(canvas.width, canvas.height));
+      missingDots--;
+    }
+    if(missingDots < 0) {
+      dots.splice(missingDots);
+    }
   }
+
   function draw() {
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
-	  canvas.style.width = canvas.width;
-	  canvas.style.height = canvas.height;
-    adjustDotCounts(canvas.width, canvas.height);
+    canvas.style.width = canvas.width;
+    canvas.style.height = canvas.height;
     ctx.fillStyle = '#FFF';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    adjustDotCounts(canvas.width, canvas.height);
     dots.forEach(updateDot)
     dots.forEach(drawDot);
     window.requestAnimationFrame(draw);
