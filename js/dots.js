@@ -48,11 +48,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function updateMousePos(e) {
     mousePos = [e.clientX, e.clientY];
-    console.log('Back!');
   }
   function mouseLeave() {
     mousePos = [-1000, -1000];
-    console.log('Gone!');
   }
   function movePoint(e) {
     dots.splice(0, 1);
