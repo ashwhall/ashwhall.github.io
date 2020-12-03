@@ -3,8 +3,29 @@ layout: page
 title: Publications
 ---
 
-#### A new paradigm to do and understand the race analyses in swimming: The application of convolutional neural networks
+#### The detection, tracking, and temporal action localisation of swimmers for automated analysis
 _Automated swimming analysis with convolutional neural networks on video data._
+
+[Link](https://link.springer.com/article/10.1007%2Fs00521-020-05485-3) | [PDF](/download/Hall2020_Article_TheDetectionTrackingAndTempora.pdf)
+```
+@article{Elipot_2019,
+	url = {https://commons.nmu.edu/isbs/vol37/iss1/112/},
+	year = 2019,
+	month = {jul},
+	publisher = {International Society of Biomechanics in Sports (ISBS)},
+	volume = {37},
+	issue = {1},
+	article = {112},
+	author = {Marc Elipot and Jess Corones and Ash Hall and Brandon Victor and Matthias Langer and Stuart Morgan and Zhen He and Mark Osborne},
+	title = {A new paradigm to do and understand the race analyses in swimming: The application of convolutional neural networks},
+	journal = {ISBS Proceedings Archive}
+}
+```
+
+_______
+
+#### A new paradigm to do and understand the race analyses in swimming: The application of convolutional neural networks
+_Workshop paper for swimming analysis with convolutional neural networks._
 
 [Link](https://commons.nmu.edu/isbs/vol37/iss1/112/) | [PDF](/download/A_NEW_PARADIGM.pdf)
 ```
