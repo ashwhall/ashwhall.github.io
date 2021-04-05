@@ -3,7 +3,7 @@ layout: page
 title: About
 ---
 
-### Core Languages / Technologies
+### Languages / Technologies
 - Deep learning / Computer Vision
 - Python / Pytorch
 - Javascript / React.js
