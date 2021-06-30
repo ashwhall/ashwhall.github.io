@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
   canvas.height = height;
   window.addEventListener('mousemove', updateMousePos, false);
   document.addEventListener('mouseleave', mouseLeave, false);
-  window.addEventListener('click', movePoint, false);
+  window.addEventListener('click', clickExplode, false);
   let mousePos = [-1000, -1000];
   const DOTS_PER_PX = 0.0001;
   const MIN_SPEED = 0.3;
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
       char,
       scale: EXPLOSION_SCALE_MIN,
       position: [x, y],
-      effectedDots: false,
+      applied: false,
     });
   }
   function generateDot(w, h) {
@@ -82,6 +82,9 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   function mouseLeave() {
     mousePos = [-1000, -1000];
+  }
+  function clickExplode(e) {
+    makeExplosion(e.clientX, e.clientY);
   }
   function movePoint(e) {
     const dot = dots.splice(0, 1)[0];
@@ -133,15 +136,17 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     for (let i = 0; i < explosions.length; i++) {
-      if (!explosions[i].effectedDots && distance(explosions[i], dot) <= EXPLOSION_RADIUS) {
-          // Explode!
-          const angle = Math.random() * Math.PI * 2;
-          const speed = MIN_SPEED + Math.random() * (MAX_SPEED - MIN_SPEED);
+      const exp = explosions[i];
+      const expDist = distance(exp, dot);
+      if (!exp.applied && expDist <= EXPLOSION_RADIUS) {
+        const force = (1 - (expDist / EXPLOSION_RADIUS * MAX_SPEED)) * 10;
+        const directionVector = [dot.position[0] - exp.position[0], dot.position[1] - exp.position[1]];
+        const angleBetween = Math.atan2(directionVector[1], directionVector[0]);
+
           dot.velocity = [
-            Math.cos(angle) * MAX_SPEED * 10,
-            Math.sin(angle) * MAX_SPEED * 10,
+            dot.velocity[0] + Math.cos(angleBetween) * force,
+            dot.velocity[1] + Math.sin(angleBetween) * force,
           ];
-          break;
       }
     }
   }
@@ -208,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
     drawText(explosion);
     explosion.scale += 0.25;
     explosion.alpha = 0.3 * (1 - (explosion.scale / EXPLOSION_SCALE_MAX));
-    explosion.effectedDots = true;
+    explosion.applied = true;
     if (explosion.scale >= EXPLOSION_SCALE_MAX) {
       explosions.splice(0, 1);
     }
