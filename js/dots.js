@@ -111,10 +111,14 @@ document.addEventListener('DOMContentLoaded', function() {
       effectee.velocity[0] += (effector.position[0] - effectee.position[0]) / dist * influenceAmount * amount;
       effectee.velocity[1] += (effector.position[1] - effectee.position[1]) / dist * influenceAmount * amount;
     }
-    return dist < INFLUENCE_DISTANCE;
+    return dist;
   }
   function updateDot(dot) {
-    const influenceCount = dots.map(d => influence(dot, d, DOT_INFLUENCE_AMOUNT)).filter(Boolean).length;
+    const dotDistances = dots.map(d => influence(dot, d, DOT_INFLUENCE_AMOUNT));
+    const influenceDistances = dotDistances.filter(dist => dist <= INFLUENCE_DISTANCE);
+    const influenceCount = influenceDistances.length;
+    const meanInfluenceDistance = influenceDistances.reduce((l, r) => l + r, 0) / influenceDistances.length;
+    // console.log(meanInfluenceDistance);
     if (mousePos[0] >= 0 && mousePos[1] >= 0 && mousePos[0] < canvas.width && mousePos[1] < canvas.height) {
       influence(dot, { position: mousePos }, MOUSE_INFLUENCE_AMOUNT)
     }
@@ -123,8 +127,10 @@ document.addEventListener('DOMContentLoaded', function() {
         dot.velocity[i] *= 0.99;
       }
     }
-    if (influenceCount >= EXPLOSION_COUNT) {
-      makeExplosion(dot.position[0], dot.position[1]);
+    if (Math.sqrt(dot.velocity[0] ** 2 + dot.velocity[1] ** 2) < MAX_SPEED) {
+      if (influenceCount >= EXPLOSION_COUNT || (influenceCount >= 2 && !isNaN(meanInfluenceDistance) && meanInfluenceDistance < 10)) {
+        makeExplosion(dot.position[0], dot.position[1]);
+      }
     }
     for (let i = 0; i < explosions.length; i++) {
       if (!explosions[i].effectedDots && distance(explosions[i], dot) <= EXPLOSION_RADIUS) {
@@ -156,8 +162,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dist < MAX_DIST) {
       ctx.beginPath();
       ctx.fillStyle = '';
-      ctx.strokeStyle = `rgba(0, 0, 0, ${0.1 * (1 - dist / MAX_DIST)})`;
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = `rgba(0, 0, 0, ${0.05 * (1 - dist / MAX_DIST)})`;
+      ctx.lineWidth = 2;
+      if (l.char !== r.char) {
+        ctx.setLineDash([4, 2]);
+      } else {
+        ctx.setLineDash([]);
+      }
       ctx.moveTo(l.position[0], l.position[1]);
       ctx.lineTo(r.position[0], r.position[1]);
       ctx.stroke();
