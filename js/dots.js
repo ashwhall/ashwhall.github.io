@@ -26,14 +26,49 @@ document.addEventListener('DOMContentLoaded', function() {
   const DOT_SIZE = 2;
   const MAX_DIST = 100 ** 2;
   const INFLUENCE_DISTANCE = 100;
+  const DOT_INFLUENCE_AMOUNT = 1 / 500;
   const MOUSE_INFLUENCE_AMOUNT = 1 / 50;
+  const EXPLOSION_COUNT = 10;
+  const EXPLOSION_SCALE_MIN = 2;
+  const EXPLOSION_SCALE_MAX = 8;
 
   const numDots = (w, h) => Math.round(w * h * DOTS_PER_PX);
+  // const textArr = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '🥲', '☺️', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🥸', '🤩', '🥳', '😏', '😒', '😞', '😔'];
+  // const textArr = ['➕', '❇️'];
+  // const textArr = ['A', 'S', 'H']
+  // const textArr = ['X', '+']
+  const textArr = ['🔴', ' 🟢', '🔵']
+  // const textArr = ['+', '-', '÷', 'x']
+  let textArrIdx = 0;
+  const explosionArr = ['💥'];
+  let explosionArrIdx = 0;
 
+  let explosions = [];
+  // const textArr = ['a', 's', 'h'];
+  // const textArr = ['π']
+
+  function makeExplosion(x, y) {
+    const distsArr = explosions.map(exp => distance(exp, { position: [x, y] }));
+    const nearProposed = distsArr.map(d => d <= 25);
+    if (nearProposed.filter(Boolean).length > 0) {
+      return;
+    }
+
+    const char = explosionArr[explosionArrIdx];
+    explosionArrIdx = (explosionArrIdx + 1)  % explosionArr.length;
+    explosions.push({
+      char,
+      scale: EXPLOSION_SCALE_MIN,
+      position: [x, y],
+    });
+  }
   function generateDot(w, h) {
     const angle = Math.random() * Math.PI * 2;
     const speed = MIN_SPEED + Math.random() * (MAX_SPEED - MIN_SPEED);
+    const char = textArr[textArrIdx];
+    textArrIdx = (textArrIdx + 1)  % textArr.length;
     return {
+      char,
       position: [Math.random() * w, Math.random() * h],
       velocity: [
         Math.cos(angle) * speed,
@@ -53,30 +88,57 @@ document.addEventListener('DOMContentLoaded', function() {
     mousePos = [-1000, -1000];
   }
   function movePoint(e) {
-    dots.splice(0, 1);
+    const dot = dots.splice(0, 1)[0];
+
     const angle = Math.random() * Math.PI * 2;
-    const speed = MAX_SPEED * 3.5;
+    const speed = MIN_SPEED + Math.random() * (MAX_SPEED - MIN_SPEED);
     dots.push({
+      ...dot,
       position: [e.clientX + 1e-8, e.clientY + 1e-8],
       velocity: [
-        Math.cos(angle) * speed,
-        Math.sin(angle) * speed,
+        Math.cos(angle) * MAX_SPEED * 3.5,
+        Math.sin(angle) * MAX_SPEED * 3.5,
       ],
     });
   }
+  function distance(l, r) {
+    return Math.sqrt((l.position[0] - r.position[0]) ** 2 + (l.position[1] - r.position[1]) ** 2);
+  }
   function influence(effectee, effector, amount) {
     if (effectee === effector) return;
-    const dist = Math.sqrt((effectee.position[0] - effector.position[0]) ** 2 + (effectee.position[1] - effector.position[1]) ** 2);
-    const influenceAmount = Math.min(10, Math.max(1, INFLUENCE_DISTANCE / dist));
+    const dist = distance(effectee, effector);
+    let influenceAmount = Math.min(10, Math.max(1, INFLUENCE_DISTANCE / dist));
     if (influenceAmount > 1) {
+      if (effector.char && effectee.char !== effector.char) {
+        influenceAmount *= -1;
+      }
       effectee.velocity[0] += (effector.position[0] - effectee.position[0]) / dist * influenceAmount * amount;
       effectee.velocity[1] += (effector.position[1] - effectee.position[1]) / dist * influenceAmount * amount;
     }
+    return dist < INFLUENCE_DISTANCE;
   }
   function updateDot(dot) {
+    const influenceCount = dots.map(d => influence(dot, d, DOT_INFLUENCE_AMOUNT)).filter(Boolean).length;
     if (mousePos[0] >= 0 && mousePos[1] >= 0 && mousePos[0] < canvas.width && mousePos[1] < canvas.height) {
       influence(dot, { position: mousePos }, MOUSE_INFLUENCE_AMOUNT)
     }
+    for (let i = 0; i < dot.velocity.length; i++) {
+      if (dot.velocity[i] > MAX_SPEED || dot.velocity[i] < -MAX_SPEED) {
+        dot.velocity[i] *= 0.99;
+      }
+    }
+    if (influenceCount >= EXPLOSION_COUNT) {
+      // Explosion!
+      const angle = Math.random() * Math.PI * 2;
+      const speed = MIN_SPEED + Math.random() * (MAX_SPEED - MIN_SPEED);
+      dot.velocity = [
+        Math.cos(angle) * MAX_SPEED * 10,
+        Math.sin(angle) * MAX_SPEED * 10,
+      ];
+      makeExplosion(dot.position[0], dot.position[1]);
+    }
+  }
+  function moveDot(dot) {
     dot.position = [
       dot.position[0] + dot.velocity[0],
       dot.position[1] + dot.velocity[1],
@@ -99,14 +161,24 @@ document.addEventListener('DOMContentLoaded', function() {
       ctx.stroke();
     }
   }
-  function drawDot(dot) {
-    ctx.beginPath();
-    ctx.arc(dot.position[0], dot.position[1], DOT_SIZE, 0, 2 * Math.PI, false);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-    ctx.fill();
+  function drawLine(dot) {
     ctx.lineWidth = 5;
     dots.forEach(other => lineBetween(dot, other));
     lineBetween(dot, { position: mousePos });
+  }
+  function drawText(obj) {
+  const scale = obj.scale ?? 1;
+  const alpha = obj.alpha ?? 0.2;
+    ctx.save();
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+    ctx.textBaseline = 'middle';
+    ctx.translate(obj.position[0], obj.position[1]);
+    ctx.scale(scale, scale);
+    ctx.fillText(obj.char, 0, 0);
+    ctx.fill();
+    ctx.restore();
   }
   function adjustDotCounts(w, h) {
     const newDotCount = numDots(w, h);
@@ -119,6 +191,14 @@ document.addEventListener('DOMContentLoaded', function() {
       dots.splice(missingDots);
     }
   }
+  function drawExplosion(explosion) {
+    drawText(explosion);
+    explosion.scale += 0.25;
+    explosion.alpha = 0.3 * (1 - (explosion.scale / EXPLOSION_SCALE_MAX));
+    if (explosion.scale >= EXPLOSION_SCALE_MAX) {
+      explosions.splice(0, 1);
+    }
+  }
 
   function draw() {
     canvas.width  = window.innerWidth;
@@ -129,7 +209,10 @@ document.addEventListener('DOMContentLoaded', function() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     adjustDotCounts(canvas.width, canvas.height);
     dots.forEach(updateDot)
-    dots.forEach(drawDot);
+    dots.forEach(moveDot);
+    dots.forEach(drawLine);
+    dots.forEach(drawText);
+    explosions.forEach(drawExplosion);
     window.requestAnimationFrame(draw);
   }
   draw();
