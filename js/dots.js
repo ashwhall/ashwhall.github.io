@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const EXPLOSION_COUNT = 10;
   const EXPLOSION_SCALE_MIN = 2;
   const EXPLOSION_SCALE_MAX = 8;
-  const EXPLOSION_RADIUS = INFLUENCE_DISTANCE;
+  const EXPLOSION_RADIUS = INFLUENCE_DISTANCE / 2;
 
   const numDots = (w, h) => Math.round(w * h * DOTS_PER_PX);
 
