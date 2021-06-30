@@ -31,25 +31,20 @@ document.addEventListener('DOMContentLoaded', function() {
   const EXPLOSION_COUNT = 10;
   const EXPLOSION_SCALE_MIN = 2;
   const EXPLOSION_SCALE_MAX = 8;
+  const EXPLOSION_RADIUS = INFLUENCE_DISTANCE;
 
   const numDots = (w, h) => Math.round(w * h * DOTS_PER_PX);
-  // const textArr = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '🥲', '☺️', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🥸', '🤩', '🥳', '😏', '😒', '😞', '😔'];
-  // const textArr = ['➕', '❇️'];
-  // const textArr = ['A', 'S', 'H']
-  // const textArr = ['X', '+']
+
   const textArr = ['🔴', ' 🟢', '🔵']
-  // const textArr = ['+', '-', '÷', 'x']
   let textArrIdx = 0;
   const explosionArr = ['💥'];
   let explosionArrIdx = 0;
 
   let explosions = [];
-  // const textArr = ['a', 's', 'h'];
-  // const textArr = ['π']
 
   function makeExplosion(x, y) {
     const distsArr = explosions.map(exp => distance(exp, { position: [x, y] }));
-    const nearProposed = distsArr.map(d => d <= 25);
+    const nearProposed = distsArr.map(d => d <= EXPLOSION_RADIUS);
     if (nearProposed.filter(Boolean).length > 0) {
       return;
     }
@@ -60,6 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
       char,
       scale: EXPLOSION_SCALE_MIN,
       position: [x, y],
+      effectedDots: false,
     });
   }
   function generateDot(w, h) {
@@ -128,16 +124,22 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     if (influenceCount >= EXPLOSION_COUNT) {
-      // Explosion!
-      const angle = Math.random() * Math.PI * 2;
-      const speed = MIN_SPEED + Math.random() * (MAX_SPEED - MIN_SPEED);
-      dot.velocity = [
-        Math.cos(angle) * MAX_SPEED * 10,
-        Math.sin(angle) * MAX_SPEED * 10,
-      ];
       makeExplosion(dot.position[0], dot.position[1]);
     }
+    for (let i = 0; i < explosions.length; i++) {
+      if (!explosions[i].effectedDots && distance(explosions[i], dot) <= EXPLOSION_RADIUS) {
+          // Explode!
+          const angle = Math.random() * Math.PI * 2;
+          const speed = MIN_SPEED + Math.random() * (MAX_SPEED - MIN_SPEED);
+          dot.velocity = [
+            Math.cos(angle) * MAX_SPEED * 10,
+            Math.sin(angle) * MAX_SPEED * 10,
+          ];
+          break;
+      }
+    }
   }
+
   function moveDot(dot) {
     dot.position = [
       dot.position[0] + dot.velocity[0],
@@ -168,9 +170,9 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   function drawText(obj) {
   const scale = obj.scale ?? 1;
-  const alpha = obj.alpha ?? 0.2;
+  const alpha = obj.alpha ?? 0.15;
     ctx.save();
-    ctx.font = '10px Arial';
+    ctx.font = '9px Arial';
     ctx.textAlign = 'center';
     ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
     ctx.textBaseline = 'middle';
@@ -195,6 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
     drawText(explosion);
     explosion.scale += 0.25;
     explosion.alpha = 0.3 * (1 - (explosion.scale / EXPLOSION_SCALE_MAX));
+    explosion.effectedDots = true;
     if (explosion.scale >= EXPLOSION_SCALE_MAX) {
       explosions.splice(0, 1);
     }
