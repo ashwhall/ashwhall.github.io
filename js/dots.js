@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
   canvas.height = height;
   window.addEventListener('mousemove', updateMousePos, false);
   document.addEventListener('mouseleave', mouseLeave, false);
-  window.addEventListener('click', clickExplode, false);
+  window.addEventListener('click', movePoint, false);
   let mousePos = [-1000, -1000];
   const DOTS_PER_PX = 0.0001;
   const MIN_SPEED = 0.3;
