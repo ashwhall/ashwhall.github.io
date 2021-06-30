@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const scale = obj.scale ?? 1;
   const alpha = obj.alpha ?? 0.15;
     ctx.save();
-    ctx.font = '9px Arial';
+    ctx.font = '8px Arial';
     ctx.textAlign = 'center';
     ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
     ctx.textBaseline = 'middle';
