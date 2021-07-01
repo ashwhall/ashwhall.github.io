@@ -102,7 +102,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   function distance(l, r) {
-    return Math.sqrt((l.position[0] - r.position[0]) ** 2 + (l.position[1] - r.position[1]) ** 2);
+    return Math.sqrt(distanceSq(l, r));
+  }
+  function distanceSq(l, r) {
+    return (l.position[0] - r.position[0]) ** 2 + (l.position[1] - r.position[1]) ** 2;
   }
   function vecMul(l, r) {
     return l.map((_, i) => l[i] * r[i]);
@@ -169,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const ySecondTerm = v1 * Math.sin(theta1 - phi) * Math.sin(phi + Math.PI / 2)
     const yNew = numerator * yFirstTerm + ySecondTerm;
 
-    const newVel = [xNew, yNew]
+    const newVel = [xNew * 1.05, yNew * 1.05]
 
     const newPos = vecAdd(target.position, scalarVecMul(COLLISION_DIST, directionVector(target.position, recipient.position)));
 
@@ -177,32 +180,34 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   function influence(affectee, affector, amount, canCollide) {
     if (affectee === affector) return;
-    const dist = distance(affectee, affector);
-    let influenceAmount = Math.min(10, Math.max(1, INFLUENCE_DISTANCE / dist));
-    if (influenceAmount > 1) {
+    const distSq = distanceSq(affectee, affector);
+
+    if (distSq < INFLUENCE_DISTANCE ** 2) {
+      const dist = Math.sqrt(distSq);
+      let influenceAmount = Math.min(10, Math.max(1, INFLUENCE_DISTANCE / dist));
       if (affector.char && affectee.char !== affector.char) {
         influenceAmount *= -1;
       }
       affectee.velocity[0] += (affector.position[0] - affectee.position[0]) / dist * influenceAmount * amount;
       affectee.velocity[1] += (affector.position[1] - affectee.position[1]) / dist * influenceAmount * amount;
+      if (canCollide && dist > 0 && dist < COLLISION_DIST) {
+        const [affecteeVel, affecteePos] = applyCollision(affector, affectee);
+        const [affectorVel, affectorPos] = applyCollision(affectee, affector);
+        affectee.velocity = affecteeVel;
+        affectee.position = affecteePos;
+        affector.velocity = affectorVel;
+        affector.position = affectorPos;
+      }
     }
-    if (canCollide && dist > 0 && dist < COLLISION_DIST) {
-      const [affecteeVel, affecteePos] = applyCollision(affector, affectee);
-      const [affectorVel, affectorPos] = applyCollision(affectee, affector);
-      affectee.velocity = affecteeVel;
-      affectee.position = affecteePos;
-      affector.velocity = affectorVel;
-      affector.position = affectorPos;
-    }
-    return dist;
+    return distSq;
   }
 
   function updateDot(dot) {
-    const dotDistances = dots.map(d => influence(dot, d, DOT_INFLUENCE_AMOUNT, true));
-    const influenceDistances = dotDistances.filter(dist => dist <= INFLUENCE_DISTANCE);
+    const dotDistancesSq = dots.map(d => influence(dot, d, DOT_INFLUENCE_AMOUNT, true));
+    const influenceDistances = dotDistancesSq.filter(dist => dist <= INFLUENCE_DISTANCE ** 2);
     const influenceCount = influenceDistances.length;
-    const maxInfluenceDistance = Math.max(...influenceDistances);
-    // const meanInfluenceDistance = influenceDistances.reduce((l, r) => l + r, 0) / influenceDistances.length;
+    // const maxInfluenceDistance = Math.max(...influenceDistances);
+    const meanInfluenceDistance = influenceDistances.reduce((l, r) => l + r, 0) / influenceDistances.length;
 
     if (mousePos[0] >= 0 && mousePos[1] >= 0 && mousePos[0] < canvas.width && mousePos[1] < canvas.height) {
       influence(dot, { position: mousePos }, MOUSE_INFLUENCE_AMOUNT, false)
@@ -213,14 +218,15 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     if (Math.sqrt(dot.velocity[0] ** 2 + dot.velocity[1] ** 2) < MAX_SPEED) {
-      if (influenceCount >= EXPLOSION_COUNT || (influenceCount >= 2 && !isNaN(maxInfluenceDistance) && maxInfluenceDistance < 25)) {
+      if (influenceCount >= EXPLOSION_COUNT || (influenceCount >= 2 && !isNaN(meanInfluenceDistance) && meanInfluenceDistance < (25 ** 2))) {
         makeExplosion(dot.position[0], dot.position[1]);
       }
     }
     for (let i = 0; i < explosions.length; i++) {
       const exp = explosions[i];
-      const expDist = distance(exp, dot);
-      if (!exp.applied && expDist <= EXPLOSION_RADIUS) {
+      const expDistSq = distanceSq(exp, dot);
+      if (!exp.applied && expDistSq <= (EXPLOSION_RADIUS ** 2)) {
+        const expDist = Math.sqrt(expDistSq);
         const force = (1 - (expDist / EXPLOSION_RADIUS * MAX_SPEED)) * 10;
         const angle = angleBetween(exp.position, dot.position);
 
@@ -313,6 +319,10 @@ document.addEventListener('DOMContentLoaded', function() {
     dots.forEach(drawLine);
     dots.forEach(drawText);
     explosions.forEach(drawExplosion);
+
+    if( /Android|webOS|iPhone|iPad|Mac|Macintosh|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+      mousePos = [-1000, 1000];
+    }
     window.requestAnimationFrame(draw);
   }
   draw();
