@@ -27,15 +27,16 @@ document.addEventListener('DOMContentLoaded', function() {
   const MAX_DIST = 100 ** 2;
   const INFLUENCE_DISTANCE = 100;
   const DOT_INFLUENCE_AMOUNT = 1 / 500;
-  const MOUSE_INFLUENCE_AMOUNT = 1 / 50;
+  const MOUSE_INFLUENCE_AMOUNT = 1 / 20;
   const EXPLOSION_COUNT = 10;
   const EXPLOSION_SCALE_MIN = 2;
   const EXPLOSION_SCALE_MAX = 8;
   const EXPLOSION_RADIUS = INFLUENCE_DISTANCE / 2;
+  const COLLISION_DIST = 10;
 
   const numDots = (w, h) => Math.round(w * h * DOTS_PER_PX);
 
-  const textArr = ['🔴', ' 🟢', '🔵']
+  const textArr = ['🔴', ' 🟢', '🔵'];
   let textArrIdx = 0;
   const explosionArr = ['💥'];
   let explosionArrIdx = 0;
@@ -103,27 +104,108 @@ document.addEventListener('DOMContentLoaded', function() {
   function distance(l, r) {
     return Math.sqrt((l.position[0] - r.position[0]) ** 2 + (l.position[1] - r.position[1]) ** 2);
   }
-  function influence(effectee, effector, amount) {
-    if (effectee === effector) return;
-    const dist = distance(effectee, effector);
+  function vecMul(l, r) {
+    return l.map((_, i) => l[i] * r[i]);
+  }
+  function vecDiv(l, r) {
+    return l.map((_, i) => l[i] / r[i]);
+  }
+  function vecAdd(l, r) {
+    return l.map((_, i) => l[i] + r[i]);
+  }
+  function vecSub(l, r) {
+    return l.map((_, i) => l[i] - r[i]);
+  }
+  function scalarVecMul(scalar, vec) {
+    return vec.map(v => v * scalar);
+  }
+  function scalarVecDiv(scalar, vec) {
+    return vec.map(v => scalar / v);
+  }
+  function scalarVecAdd(scalar, vec) {
+    return vec.map(v => v + scalar);
+  }
+  function scalarVecSub(scalar, vec) {
+    return vec.map(v => scalar - v);
+  }
+  function dot(l, r) {
+    return vecMul(l, r).reduce((m, n) => m + n);
+  }
+  function magnitude(vec) {
+    return Math.sqrt(vec.reduce((l, r) => l + r ** 2, 0));
+  }
+  function vecNorm(vec) {
+    const mag = magnitude(vec);
+    return vec.map(v => v / mag);
+  }
+  function directionVector(from, to) {
+    return vecNorm([to[0] - from[0], to[1] - from[1]]);
+  }
+  function angleBetween(from, to) {
+    const vec = directionVector(from, to);
+    return Math.atan2(vec[1], vec[0]);
+  }
+  function applyCollision(target, recipient) {
+    const p1 = recipient.position;
+    const p2 = target.position;
+    let v1 = recipient.velocity;
+    let v2 = target.velocity;
+
+    const phi = angleBetween(p2, p1);
+    const theta1 = angleBetween(p1, vecAdd(p1, v1));
+    const theta2 = angleBetween(p2, vecAdd(p2, v2));
+
+    v1 = magnitude(v1);
+    v2 = magnitude(v2);
+
+    // First term in the numerator cancels for equal masses, as does the 2 and denominator
+    const numerator = v2 * Math.cos(theta2 - phi);
+
+    const xFirstTerm = Math.cos(phi);
+    const xSecondTerm = v1 * Math.sin(theta1 - phi) * Math.cos(phi + Math.PI / 2);
+    const xNew = numerator * xFirstTerm + xSecondTerm;
+
+    const yFirstTerm = Math.sin(phi);
+    const ySecondTerm = v1 * Math.sin(theta1 - phi) * Math.sin(phi + Math.PI / 2)
+    const yNew = numerator * yFirstTerm + ySecondTerm;
+
+    const newVel = [xNew, yNew]
+
+    const newPos = vecAdd(target.position, scalarVecMul(COLLISION_DIST, directionVector(target.position, recipient.position)));
+
+    return [newVel, newPos];
+  }
+  function influence(affectee, affector, amount, canCollide) {
+    if (affectee === affector) return;
+    const dist = distance(affectee, affector);
     let influenceAmount = Math.min(10, Math.max(1, INFLUENCE_DISTANCE / dist));
     if (influenceAmount > 1) {
-      if (effector.char && effectee.char !== effector.char) {
+      if (affector.char && affectee.char !== affector.char) {
         influenceAmount *= -1;
       }
-      effectee.velocity[0] += (effector.position[0] - effectee.position[0]) / dist * influenceAmount * amount;
-      effectee.velocity[1] += (effector.position[1] - effectee.position[1]) / dist * influenceAmount * amount;
+      affectee.velocity[0] += (affector.position[0] - affectee.position[0]) / dist * influenceAmount * amount;
+      affectee.velocity[1] += (affector.position[1] - affectee.position[1]) / dist * influenceAmount * amount;
+    }
+    if (canCollide && dist > 0 && dist < COLLISION_DIST) {
+      const [affecteeVel, affecteePos] = applyCollision(affector, affectee);
+      const [affectorVel, affectorPos] = applyCollision(affectee, affector);
+      affectee.velocity = affecteeVel;
+      affectee.position = affecteePos;
+      affector.velocity = affectorVel;
+      affector.position = affectorPos;
     }
     return dist;
   }
+
   function updateDot(dot) {
-    const dotDistances = dots.map(d => influence(dot, d, DOT_INFLUENCE_AMOUNT));
+    const dotDistances = dots.map(d => influence(dot, d, DOT_INFLUENCE_AMOUNT, true));
     const influenceDistances = dotDistances.filter(dist => dist <= INFLUENCE_DISTANCE);
     const influenceCount = influenceDistances.length;
-    const meanInfluenceDistance = influenceDistances.reduce((l, r) => l + r, 0) / influenceDistances.length;
-    // console.log(meanInfluenceDistance);
+    const maxInfluenceDistance = Math.max(...influenceDistances);
+    // const meanInfluenceDistance = influenceDistances.reduce((l, r) => l + r, 0) / influenceDistances.length;
+
     if (mousePos[0] >= 0 && mousePos[1] >= 0 && mousePos[0] < canvas.width && mousePos[1] < canvas.height) {
-      influence(dot, { position: mousePos }, MOUSE_INFLUENCE_AMOUNT)
+      influence(dot, { position: mousePos }, MOUSE_INFLUENCE_AMOUNT, false)
     }
     for (let i = 0; i < dot.velocity.length; i++) {
       if (dot.velocity[i] > MAX_SPEED || dot.velocity[i] < -MAX_SPEED) {
@@ -131,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     if (Math.sqrt(dot.velocity[0] ** 2 + dot.velocity[1] ** 2) < MAX_SPEED) {
-      if (influenceCount >= EXPLOSION_COUNT || (influenceCount >= 2 && !isNaN(meanInfluenceDistance) && meanInfluenceDistance < 10)) {
+      if (influenceCount >= EXPLOSION_COUNT || (influenceCount >= 2 && !isNaN(maxInfluenceDistance) && maxInfluenceDistance < 25)) {
         makeExplosion(dot.position[0], dot.position[1]);
       }
     }
@@ -140,12 +222,11 @@ document.addEventListener('DOMContentLoaded', function() {
       const expDist = distance(exp, dot);
       if (!exp.applied && expDist <= EXPLOSION_RADIUS) {
         const force = (1 - (expDist / EXPLOSION_RADIUS * MAX_SPEED)) * 10;
-        const directionVector = [dot.position[0] - exp.position[0], dot.position[1] - exp.position[1]];
-        const angleBetween = Math.atan2(directionVector[1], directionVector[0]);
+        const angle = angleBetween(exp.position, dot.position);
 
           dot.velocity = [
-            dot.velocity[0] + Math.cos(angleBetween) * force,
-            dot.velocity[1] + Math.sin(angleBetween) * force,
+            dot.velocity[0] + Math.cos(angle) * force,
+            dot.velocity[1] + Math.sin(angle) * force,
           ];
       }
     }
@@ -185,8 +266,8 @@ document.addEventListener('DOMContentLoaded', function() {
     lineBetween(dot, { position: mousePos });
   }
   function drawText(obj) {
-  const scale = obj.scale ?? 1;
-  const alpha = obj.alpha ?? 0.15;
+    const scale = obj.scale ?? 1;
+    const alpha = obj.alpha ?? 0.2;
     ctx.save();
     ctx.font = '8px Arial';
     ctx.textAlign = 'center';
