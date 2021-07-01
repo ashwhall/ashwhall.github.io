@@ -321,7 +321,8 @@ document.addEventListener('DOMContentLoaded', function() {
     explosions.forEach(drawExplosion);
 
     if( /Android|webOS|iPhone|iPad|Mac|Macintosh|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-      mousePos = [-1000, 1000];
+      // Move the "mouse" off screen if it's a mobile device to simulate just a single tap on the screen
+      mousePos = [-1000, -1000];
     }
     window.requestAnimationFrame(draw);
   }
