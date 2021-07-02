@@ -20,18 +20,17 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('mouseleave', mouseLeave, false);
   window.addEventListener('click', movePoint, false);
   let mousePos = [-1000, -1000];
-  const DOTS_PER_PX = 0.0001;
+  const DOTS_PER_PX = 0.00007;
   const MIN_SPEED = 0.3;
   const MAX_SPEED = 1;
-  const DOT_SIZE = 2;
-  const MAX_DIST = 100 ** 2;
+  const MAX_DIST_SQ = 100 ** 2;
   const INFLUENCE_DISTANCE = 100;
-  const DOT_INFLUENCE_AMOUNT = 1 / 500;
+  const DOT_INFLUENCE_AMOUNT = 1 / 200;
   const MOUSE_INFLUENCE_AMOUNT = 1 / 20;
   const EXPLOSION_COUNT = 10;
   const EXPLOSION_SCALE_MIN = 2;
   const EXPLOSION_SCALE_MAX = 8;
-  const EXPLOSION_RADIUS = INFLUENCE_DISTANCE / 2;
+  const EXPLOSION_RADIUS = INFLUENCE_DISTANCE;
   const COLLISION_DIST = 10;
 
   const numDots = (w, h) => Math.round(w * h * DOTS_PER_PX);
@@ -212,32 +211,54 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mousePos[0] >= 0 && mousePos[1] >= 0 && mousePos[0] < canvas.width && mousePos[1] < canvas.height) {
       influence(dot, { position: mousePos }, MOUSE_INFLUENCE_AMOUNT, false)
     }
-    for (let i = 0; i < dot.velocity.length; i++) {
-      if (dot.velocity[i] > MAX_SPEED || dot.velocity[i] < -MAX_SPEED) {
-        dot.velocity[i] *= 0.99;
-      }
-    }
-    if (Math.sqrt(dot.velocity[0] ** 2 + dot.velocity[1] ** 2) < MAX_SPEED) {
+    const velocitySq = dot.velocity[0] ** 2 + dot.velocity[1] ** 2;
+    const maxSpeedSq = MAX_SPEED ** 2;
+    if (velocitySq > maxSpeedSq) {
+        dot.velocity[0] *= 0.99;
+        dot.velocity[1] *= 0.99;
+    } else {
+      // Only make explosions if we're within the "max velocity"
       if (influenceCount >= EXPLOSION_COUNT || (influenceCount >= 2 && !isNaN(meanInfluenceDistance) && meanInfluenceDistance < (25 ** 2))) {
         makeExplosion(dot.position[0], dot.position[1]);
       }
     }
     for (let i = 0; i < explosions.length; i++) {
       const exp = explosions[i];
-      const expDistSq = distanceSq(exp, dot);
-      if (!exp.applied && expDistSq <= (EXPLOSION_RADIUS ** 2)) {
-        const expDist = Math.sqrt(expDistSq);
-        const force = (1 - (expDist / EXPLOSION_RADIUS * MAX_SPEED)) * 10;
-        const angle = angleBetween(exp.position, dot.position);
+      if (!exp.applied) {
+        const expDistSq = distanceSq(exp, dot);
+        if (expDistSq <= (EXPLOSION_RADIUS ** 2)) {
+          const expDist = Math.sqrt(expDistSq);
+          const force = (1 - (expDist / EXPLOSION_RADIUS)) * MAX_SPEED * 10;
+          const angle = angleBetween(exp.position, dot.position);
 
-          dot.velocity = [
-            dot.velocity[0] + Math.cos(angle) * force,
-            dot.velocity[1] + Math.sin(angle) * force,
-          ];
+            dot.velocity = [
+              dot.velocity[0] + Math.cos(angle) * force,
+              dot.velocity[1] + Math.sin(angle) * force,
+            ];
+        }
       }
     }
   }
+  // https://stackoverflow.com/questions/1997661/unique-object-identifier-in-javascript/1997811
+  (function() {
+        if ( typeof Object.id == "undefined" ) {
+            var id = 0;
 
+            Object.id = function(o) {
+                if ( typeof o.__uniqueid == "undefined" ) {
+                    Object.defineProperty(o, "__uniqueid", {
+                        value: ++id,
+                        enumerable: false,
+                        // This could go either way, depending on your
+                        // interpretation of what an "id" is
+                        writable: false
+                    });
+                }
+
+                return o.__uniqueid;
+            };
+        }
+    })();
   function moveDot(dot) {
     dot.position = [
       dot.position[0] + dot.velocity[0],
@@ -250,35 +271,36 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   function lineBetween(l, r) {
     if (l === r) return;
-    const dist = (l.position[0] - r.position[0]) ** 2 + (l.position[1] - r.position[1]) ** 2;
-    if (dist < MAX_DIST) {
-      ctx.beginPath();
-      ctx.fillStyle = '';
-      ctx.strokeStyle = `rgba(0, 0, 0, ${0.05 * (1 - dist / MAX_DIST)})`;
-      ctx.lineWidth = 2;
-      if (l.char !== r.char) {
+    if (Object.id(l) > Object.id(r)) return;
+
+    const distSq = (l.position[0] - r.position[0]) ** 2 + (l.position[1] - r.position[1]) ** 2;
+    if (distSq < MAX_DIST_SQ) {
+      ctx.strokeStyle = `rgba(0, 0, 0, ${0.05 * (1 - distSq / MAX_DIST_SQ)})`;
+      if (l.char && r.char && l.char !== r.char) {
         ctx.setLineDash([4, 2]);
       } else {
         ctx.setLineDash([]);
       }
       ctx.moveTo(l.position[0], l.position[1]);
       ctx.lineTo(r.position[0], r.position[1]);
-      ctx.stroke();
     }
   }
   function drawLine(dot) {
-    ctx.lineWidth = 5;
+    ctx.beginPath();
+    // ctx.lineWidth = 5;
+    ctx.fillStyle = '';
+    ctx.lineWidth = 3;
+
     dots.forEach(other => lineBetween(dot, other));
+
     lineBetween(dot, { position: mousePos });
+    ctx.stroke();
   }
   function drawText(obj) {
     const scale = obj.scale ?? 1;
     const alpha = obj.alpha ?? 0.2;
     ctx.save();
-    ctx.font = '8px Arial';
-    ctx.textAlign = 'center';
     ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
-    ctx.textBaseline = 'middle';
     ctx.translate(obj.position[0], obj.position[1]);
     ctx.scale(scale, scale);
     ctx.fillText(obj.char, 0, 0);
@@ -305,8 +327,10 @@ document.addEventListener('DOMContentLoaded', function() {
       explosions.splice(0, 1);
     }
   }
-
+  let maDelta = 0;
+  const maW = 0.95;
   function draw() {
+  const start = performance.now();
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
     canvas.style.width = canvas.width;
@@ -317,9 +341,20 @@ document.addEventListener('DOMContentLoaded', function() {
     dots.forEach(updateDot)
     dots.forEach(moveDot);
     dots.forEach(drawLine);
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     dots.forEach(drawText);
     explosions.forEach(drawExplosion);
-
+    const delta = performance.now() - start;
+    maDelta = maW * maDelta + (1 - maW) * delta;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    drawText({
+      position: [canvas.width, canvas.height],
+      char: `${Math.round(1000 / maDelta)}FPS`,
+      scale: 1.5,
+    })
     if( /Android|webOS|iPhone|iPad|Mac|Macintosh|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
       // Move the "mouse" off screen if it's a mobile device to simulate just a single tap on the screen
       mousePos = [-1000, -1000];
