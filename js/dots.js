@@ -222,6 +222,8 @@ document.addEventListener('DOMContentLoaded', function() {
         makeExplosion(dot.position[0], dot.position[1]);
       }
     }
+  }
+  function applyExplosions(dot) {
     for (let i = 0; i < explosions.length; i++) {
       const exp = explosions[i];
       if (!exp.applied) {
@@ -338,7 +340,8 @@ document.addEventListener('DOMContentLoaded', function() {
     ctx.fillStyle = '#FFF';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     adjustDotCounts(canvas.width, canvas.height);
-    dots.forEach(updateDot)
+    dots.forEach(updateDot);
+    dots.forEach(applyExplosions);
     dots.forEach(moveDot);
     dots.forEach(drawLine);
     ctx.font = '8px Arial';
