@@ -65,4 +65,14 @@ _A method for distributed training of deep neural networks specifically designed
 _______
 
 
+#### Computer Science Honours Thesis
+_Few-Shot Continuous Meta-Learning with Neural Networks, 2018._
+
+[Thesis PDF](/download/honours-thesis.pdf)
+[Literature Survey PDF](/download/honours-literature-survey.pdf)
+[Directed Study PDF](/download/honours-directed-study-report.pdf)
+
+_______
+
+
 [ORCID](https://orcid.org/0000-0002-0881-4098) | [Google Scholar](https://scholar.google.com/citations?user=zCj07uQAAAAJ)
