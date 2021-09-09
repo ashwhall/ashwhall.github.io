@@ -68,9 +68,7 @@ _______
 #### Computer Science Honours Thesis
 _Few-Shot Continuous Meta-Learning with Neural Networks. Thesis submitted for the completion of a CompSci Honours, 2018._
 
-[Thesis PDF](/download/honours-thesis.pdf) \
-[Literature Survey PDF](/download/honours-literature-survey.pdf) \
-[Directed Study PDF](/download/honours-directed-study-report.pdf)
+[Thesis](/download/honours-thesis.pdf) | [Literature Survey](/download/honours-literature-survey.pdf) | [Directed Study](/download/honours-directed-study-report.pdf)
 
 _______
 
