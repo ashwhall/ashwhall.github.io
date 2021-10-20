@@ -3,6 +3,30 @@ layout: page
 title: Publications
 ---
 
+
+#### Wheat physiology predictor: predicting physiological traits in wheat from hyperspectral reflectance measurements using deep learning
+_Physiological trait prediction of wheat samples with convolutional neural networks._
+
+[Link](https://doi.org/10.1186/s13007-021-00806-6) | [PDF](/download/Furbank_et_al-2021-Plant_Methods.pdf)
+```
+@article{Furbank2021,
+	url = {https://doi.org/10.1186/s13007-021-00806-6},
+	doi = {10.1186/s13007-021-00806-6},
+	issn = {1746-4811},
+	year = {2021},
+	month = {oct},
+	day = {19},
+	volume = {17},
+	publisher = {Springer London},
+	author = {Robert T. Furbank and Viridiana Silva-Perez and John R. Evans and Anthony G Condon and Gonzalo M. Estavillo and Wennan He and Saul Newman and Richard Poir{\'e} and Ashley Hall and Zhen He},
+	title = {Wheat physiology predictor: predicting physiological traits in wheat from hyperspectral reflectance measurements using deep learning},
+	journal = {Plant Methods}
+}
+```
+
+_______
+
+
 #### The detection, tracking, and temporal action localisation of swimmers for automated analysis
 _Automated swimming analysis with convolutional neural networks on video data._
 
