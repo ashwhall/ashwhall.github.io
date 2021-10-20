@@ -34,7 +34,7 @@ _Automated swimming analysis with convolutional neural networks on video data._
 ```
 @article{Hall_2020,
 	url = {https://doi.org/10.1007/s00521-020-05485-3},
-	year = 2020,
+	year = {2020},
 	month = {nov},
 	publisher = {Springer London},
 	author = {Ashley Hall and Brandon Victor and Zhen He and Matthias Langer and Marc Elipot and Aiden Nibali and Stuart Morgan},
@@ -52,7 +52,7 @@ _Swimming analysis with convolutional neural networks._
 ```
 @article{Elipot_2019,
 	url = {https://commons.nmu.edu/isbs/vol37/iss1/112/},
-	year = 2019,
+	year = {2019},
 	month = {jul},
 	publisher = {International Society of Biomechanics in Sports (ISBS)},
 	volume = {37},
@@ -74,7 +74,7 @@ _A method for distributed training of deep neural networks specifically designed
 @article{Langer_2018,
 	doi = {10.1109/tpds.2018.2833074},
 	url = {https://doi.org/10.1109%2Ftpds.2018.2833074},
-	year = 2018,
+	year = {2018},
 	month = {nov},
 	publisher = {Institute of Electrical and Electronics Engineers (IEEE)},
 	volume = {29},
