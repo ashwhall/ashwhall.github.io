@@ -77,8 +77,8 @@ social-network-links:
   gitlab: ashwhall
   github: ashwhall
   linkedin: ashwhall
-  facebook: hallashw
-  twitter: ashwhall
+#  facebook: hallashw
+#  twitter: ashwhall
 #  google-plus: +DeanAttali
 #  xing: yourname
 #  stackoverflow: "3943160/daattali"
@@ -92,9 +92,9 @@ social-network-links:
 
 # Select which share links to show in posts
 share-links-active:
-  twitter: true
-  facebook: true
-  linkedin: true
+#  twitter: true
+#  facebook: true
+#  linkedin: true
 
 # How to display the link to the website in the footer
 # Remove this if you don't want a link in the footer
