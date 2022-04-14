@@ -77,6 +77,9 @@ social-network-links:
   gitlab: ashwhall
   github: ashwhall
   linkedin: ashwhall
+  npm: ashwhall
+  dockerhub: ashwhall
+  stackoverflow: 5270944/ash-hall
 #  facebook: hallashw
 #  twitter: ashwhall
 #  google-plus: +DeanAttali
@@ -92,8 +95,8 @@ social-network-links:
 
 # Select which share links to show in posts
 share-links-active:
-#  twitter: true
-#  facebook: true
+ twitter: true
+ facebook: true
 #  linkedin: true
 
 # How to display the link to the website in the footer
