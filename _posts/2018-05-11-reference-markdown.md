@@ -1,12 +1,9 @@
 ---
 layout: post
-title: Reference markdown
-subtitle: A page of things that can be done with Jekyll
-bigimg: /img/path.jpg
-image: /img/hello_world.jpeg
-gh-repo: ashwhall/dsnt
-gh-badge: [star, fork, follow]
-tags: [test, markdown, jekyll]
+title: Deep Learning Interview
+subtitle: Transcription of an interview filmed for La Trobe University's Deep Learning subject
+gh-badge: [follow]
+tags: [interview, deep learning]
 published: true
 ---
 

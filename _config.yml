@@ -145,6 +145,8 @@ paginate: 5
 kramdown:
   input: GFM
 
+paginate_path: "/blog/page:num/"
+
 # Default YAML values (more information on Jekyll's site)
 defaults:
   - scope:
