@@ -100,3 +100,18 @@ yelp:
   name: "Yelp"
   baseURL: "https://{{ site.author.yelp }}.yelp.com"
   icon: "fa-yelp"
+
+npm:
+  name: "NPM"
+  baseURL: "https://www.npmjs.com/~"
+  icon: "fa-npm"
+  
+dockerhub:
+  name: "Docker Hub"
+  baseURL: "https://hub.docker.com/u/"
+  icon: "fa-docker"
+  
+stackoverflow:
+  name: "Stack Overflow"
+  baseURL: "https://stackoverflow.com/users/"
+  icon: "fa-stack-overflow"
