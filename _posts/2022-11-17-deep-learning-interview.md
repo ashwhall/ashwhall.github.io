@@ -2,7 +2,7 @@
 layout: post
 title: Deep Learning Interview
 subtitle: >-
-  Transcription of an interview filmed for La Trobe University's Deep Learning
+  Transcript of an interview filmed for La Trobe University's Deep Learning
   subject
 gh-badge:
   - follow
