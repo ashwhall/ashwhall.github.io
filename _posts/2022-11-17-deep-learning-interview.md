@@ -12,7 +12,9 @@ tags:
 published: true
 ---
 
-This interview was conducted by Zhen He of La Trobe University, Melbourne, for his subject CSE5DL - Deep Learning. My answers were prepared before the interview and filmed for presentation throughout the course. At the time of this interview I'm employed by the Australian Institute of Sport as the machine learning research engineer lead, so my answers are given mostly within that context.
+This interview was conducted by Zhen He of La Trobe University, Melbourne, for his subject CSE5DL - Deep Learning. My answers were prepared before the interview and filmed for presentation throughout the course.
+
+At the time of this interview I'm employed by the Australian Institute of Sport as the machine learning research engineer lead, so my answers are given mostly within that context.
 
 ## _Tell us about some of the cool projects you have worked on._
 
@@ -28,7 +30,7 @@ I've worked on a number of interesting projects during my time at the AIS, but t
 
 I got into computer science not just because I have a passion for computers, numbers, algorithmic thinking, but also because I just love tinkering. In my role as research engineer lead for the AIS, I'm fortunate to sit in the intersection of those two things. I spend some of my time reading research papers and exploring new developments in AI, and some of my time getting into the nitty gritty of software engineering. It's a fantastic balance which allows me to dig around and satisfy my curiosities, while also achieving an outcome.
 
-## _What’s some cool tech that you’ve had a chance to play around with because of deep learning? _
+## _What’s some cool tech that you’ve had a chance to play around with because of deep learning?_
 
 As the nature of my projects vary quite a bit, I've had my hands on a variety of interesting gadgets. Among those, one of my favourites is the Nvidia Jetson Xavier, which is a small form-factor computer which is basically an Nvidia graphics card, with just enough CPU and memory to not be a bottleneck for the GPU. It's small enough to hold in one hand, it runs Linux, and it's actually a pretty nice environment for running inference of deep learning models.
 It's even been enjoyable simply to get out and see how deep learning techniques apply in the real world. A common task in computer vision is to calibrate cameras using a calibration board - which is essentially just some black dots printed on a stiff board which you then have to walk in front of the camera. As trivial as it may seem, it's quite interesting to take something as menial-sounding as waving a board around into the real world and see how your assumptions play out in reality. On the non-hardware side of things, on numerous occasions I've come across a research paper, found that they have their code and models available on GitHub, then pulled it and seen how it functions in a sports setting. I've done this with transformer architectures for pose and object detection, and some of the newest and most powerful multiple-object tracking algorithms.
