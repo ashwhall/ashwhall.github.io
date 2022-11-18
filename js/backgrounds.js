@@ -409,7 +409,7 @@ const BACKGROUNDS = [
     draw();
   },
   () => {
-    const ALPHA = 0.06;
+    const ALPHA = 0.05;
 
     class Ball {
       constructor(x, y, radius, color, velocity) {
@@ -510,7 +510,7 @@ const BACKGROUNDS = [
 
     function adjustCounts(balls) {
       const desiredBalls = Math.floor(
-        (window.innerWidth * window.innerHeight) / 10000
+        (window.innerWidth * window.innerHeight) / 20000
       );
       while (balls.length < desiredBalls) {
         balls.push(makeballs(1)[0]);
