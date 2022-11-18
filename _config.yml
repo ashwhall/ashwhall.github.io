@@ -120,7 +120,7 @@ gtm: "G-3MZE8FVD9N"
 
 # --- Misc --- #
 # Fill in your Disqus shortname (NOT the userid) if you want to support Disqus comments
-#disqus: ""
+disqus: "ashwhall-github-io"
 
 # Facebook App ID
 # fb_app_id: ""
