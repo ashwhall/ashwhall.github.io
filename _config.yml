@@ -104,10 +104,10 @@ share-links-active:
 # --- Web Statistics Section --- #
 
 # Fill in your Google Analytics ID to track your website using GA
-#google_analytics: ""
+google_analytics: "G-3MZE8FVD9N"
 
 # Google Tag Manager ID
-#gtm: ""
+gtm: "G-3MZE8FVD9N"
 
 # Matomo (aka Piwik) Web statistics
 # Uncomment the following section to enable Matomo. The opt-out parameter controls
@@ -120,7 +120,7 @@ share-links-active:
 
 # --- Misc --- #
 # Fill in your Disqus shortname (NOT the userid) if you want to support Disqus comments
-#disqus: ""
+disqus: "ashwhall-github-io"
 
 # Facebook App ID
 # fb_app_id: ""
