@@ -381,25 +381,24 @@ const BACKGROUNDS = [
     draw();
   },
   (ctx, canvas, renderCallback) => {
-    const ALPHA = 0.05;
+    const ALPHA = 0.03;
 
     class Ball {
-      constructor(x, y, radius, color, velocity) {
+      constructor(x, y, radius, colour, velocity) {
         this.x = x;
         this.y = y;
         this.radius = radius;
-        this.color = color;
+        this.colour = colour;
         this.velocity = velocity;
       }
 
       draw(ctx) {
-        ctx.save();
+        ctx.restore();
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        ctx.fillStyle = this.color;
-        ctx.globalAlpha = ALPHA;
+        ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
+        ctx.fillStyle = this.colour;
         ctx.fill();
-        ctx.restore();
       }
 
       update(ctx, canvas) {
@@ -431,7 +430,6 @@ const BACKGROUNDS = [
         // If we're still past the screen bounds by more a pixel or more, move randomly into the screen
         // as this is an indication that the user has resized the window
         if (pastXBounds >= 1 || pastYBounds >= 1) {
-          console.log(pastXBounds, pastYBounds);
           const xMin = this.radius;
           const xMax = canvas.width - this.radius;
           const yMin = this.radius;
@@ -442,33 +440,33 @@ const BACKGROUNDS = [
       }
     }
 
-    function makeballs(count) {
+    function makeBalls(count) {
       const balls = [];
       for (let i = 0; i < count; i++) {
         const radius = Math.random() * 30 + 10;
         const x = Math.random() * (window.innerWidth - radius * 2) + radius;
         const y = Math.random() * (window.innerHeight - radius * 2) + radius;
-        const color = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${
+        const colour = `rgba(${Math.round(Math.random() * 255)}, ${Math.round(
           Math.random() * 255
-        }, 0.5)`;
+        )}, ${Math.round(Math.random() * 255)}, ${ALPHA})`;
         const velocity = {
           x: Math.random() - 0.5,
           y: Math.random() - 0.5,
         };
-        balls.push(new Ball(x, y, radius, color, velocity));
+        balls.push(new Ball(x, y, radius, colour, velocity));
       }
       return balls;
     }
 
     function adjustCounts(balls) {
       const desiredBalls = Math.floor(
-        (window.innerWidth * window.innerHeight) / 20000
+        (window.innerWidth * window.innerHeight) / 30000
       );
       while (balls.length < desiredBalls) {
-        balls.push(makeballs(1)[0]);
+        balls.push(makeBalls(1)[0]);
       }
       while (balls.length > desiredBalls) {
-        // Randomly remove ball
+        // Randomly remove a ball
         balls.splice(Math.floor(Math.random() * balls.length), 1);
       }
       return balls;
@@ -486,10 +484,10 @@ const BACKGROUNDS = [
     }
 
     function update(ctx, canvas, balls) {
-      balls.forEach((o, i) => o.update(ctx, canvas, balls, i));
+      balls.forEach((b) => b.update(ctx, canvas));
     }
     function draw(ctx, canvas, balls) {
-      balls.forEach((o) => o.draw(ctx, canvas));
+      balls.forEach((b) => b.draw(ctx, canvas));
     }
 
     function loop(ctx, canvas, balls) {
@@ -526,16 +524,14 @@ const BACKGROUNDS = [
       });
     }
 
-    const balls = makeballs(100);
+    const balls = [];
     window.addEventListener("click", (e) => onClick(e, balls), false);
     loop(ctx, canvas, balls);
   },
 ];
 
 class Perf {
-  constructor(ctx, canvas) {
-    this.ctx = ctx;
-    this.canvas = canvas;
+  constructor() {
     this.lastTime = performance.now();
     this.smoothDelta = 0;
     this.movingAverageWeight = 0.95;
@@ -551,17 +547,22 @@ class Perf {
       delta * (1 - this.movingAverageWeight);
   }
 
-  render() {
+  render(ctx, canvas) {
+    ctx.save();
     this.update();
-    this.ctx.save();
-    this.ctx.textAlign = "right";
-    this.ctx.textBaseline = "bottom";
-    this.ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-    this.ctx.translate(this.canvas.width, this.canvas.height);
-    this.ctx.scale(1.5, 1.5);
-    this.ctx.fillText(`${Math.round(1000 / this.smoothDelta)}FPS`, 0, 0);
-    this.ctx.fill();
-    this.ctx.restore();
+    const prevFill = ctx.fillStyle;
+    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "bottom";
+    ctx.font = "bold 16px arial";
+    ctx.fillText(
+      `${Math.round(1000 / this.smoothDelta)}FPS`,
+      canvas.width,
+      canvas.height
+    );
+    ctx.fill();
+    ctx.fillStyle = prevFill;
+    ctx.restore();
   }
 }
 
@@ -593,5 +594,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // Randomly pick a background
   const background =
     BACKGROUNDS[Math.floor(Math.random() * BACKGROUNDS.length)];
-  background(ctx, canvas, perf.render.bind(perf));
+  const renderCallback = () => perf.render(ctx, canvas);
+  background(ctx, canvas, renderCallback);
 });
