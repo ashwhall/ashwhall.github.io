@@ -1,22 +1,5 @@
 const BACKGROUNDS = [
-  () => {
-    const root = document.querySelector("html");
-    root.style.minHeight = "100%";
-    const body = document.querySelector("body");
-    const canvas = document.createElement("canvas");
-    body.insertBefore(canvas, body.firstChild);
-    canvas.id = "dot-canvas";
-    canvas.style.position = "fixed";
-    canvas.style.top = 0;
-    canvas.style.left = 0;
-    canvas.style.bottom = 0;
-    canvas.style.right = 0;
-    const { width, height } = root.getBoundingClientRect();
-    canvas.style.width = width;
-    canvas.style.height = height;
-    const ctx = canvas.getContext("2d");
-    canvas.width = width;
-    canvas.height = height;
+  (ctx, canvas, renderCallback) => {
     window.addEventListener("mousemove", updateMousePos, false);
     document.addEventListener("mouseleave", mouseLeave, false);
     window.addEventListener("click", movePoint, false);
@@ -73,7 +56,7 @@ const BACKGROUNDS = [
       };
     }
     let dots = [];
-    for (let i = 0; i < numDots(width, height); i++) {
+    for (let i = 0; i < numDots(canvas.width, canvas.height); i++) {
       dots.push(generateDot(canvas.width, canvas.height));
     }
 
@@ -367,10 +350,7 @@ const BACKGROUNDS = [
         explosions.splice(0, 1);
       }
     }
-    let maDelta = 0;
-    const maW = 0.95;
     function draw() {
-      const start = performance.now();
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       canvas.style.width = canvas.width;
@@ -387,15 +367,7 @@ const BACKGROUNDS = [
       ctx.textBaseline = "middle";
       dots.forEach(drawText);
       explosions.forEach(drawExplosion);
-      const delta = performance.now() - start;
-      maDelta = maW * maDelta + (1 - maW) * delta;
-      ctx.textAlign = "right";
-      ctx.textBaseline = "bottom";
-      drawText({
-        position: [canvas.width, canvas.height],
-        char: `${Math.round(1000 / maDelta)}FPS`,
-        scale: 1.5,
-      });
+      renderCallback();
       if (
         /Android|webOS|iPhone|iPad|Mac|Macintosh|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
           navigator.userAgent
@@ -408,7 +380,7 @@ const BACKGROUNDS = [
     }
     draw();
   },
-  () => {
+  (ctx, canvas, renderCallback) => {
     const ALPHA = 0.05;
 
     class Ball {
@@ -421,11 +393,13 @@ const BACKGROUNDS = [
       }
 
       draw(ctx) {
+        ctx.save();
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
         ctx.fillStyle = this.color;
         ctx.globalAlpha = ALPHA;
         ctx.fill();
+        ctx.restore();
       }
 
       update(ctx, canvas) {
@@ -466,28 +440,6 @@ const BACKGROUNDS = [
           this.y = Math.random() * (yMax - yMin) + yMin;
         }
       }
-    }
-
-    function setup() {
-      const root = document.querySelector("html");
-      root.style.minHeight = "100%";
-      const body = document.querySelector("body");
-      const canvas = document.createElement("canvas");
-      body.insertBefore(canvas, body.firstChild);
-      canvas.id = "dot-canvas";
-      canvas.style.position = "fixed";
-      canvas.style.top = 0;
-      canvas.style.left = 0;
-      canvas.style.bottom = 0;
-      canvas.style.right = 0;
-      const { width, height } = root.getBoundingClientRect();
-      canvas.style.width = width;
-      canvas.style.height = height;
-      const ctx = canvas.getContext("2d");
-      canvas.width = width;
-      canvas.height = height;
-
-      return [ctx, canvas];
     }
 
     function makeballs(count) {
@@ -547,6 +499,7 @@ const BACKGROUNDS = [
       update(ctx, canvas, balls);
       draw(ctx, canvas, balls);
 
+      renderCallback();
       window.requestAnimationFrame(loop.bind(null, ctx, canvas, balls));
     }
 
@@ -573,16 +526,72 @@ const BACKGROUNDS = [
       });
     }
 
-    const [ctx, canvas] = setup();
     const balls = makeballs(100);
     window.addEventListener("click", (e) => onClick(e, balls), false);
     loop(ctx, canvas, balls);
   },
 ];
 
+class Perf {
+  constructor(ctx, canvas) {
+    this.ctx = ctx;
+    this.canvas = canvas;
+    this.lastTime = performance.now();
+    this.smoothDelta = 0;
+    this.movingAverageWeight = 0.95;
+  }
+
+  update() {
+    this.frameCount++;
+    const now = performance.now();
+    const delta = now - this.lastTime;
+    this.lastTime = now;
+    this.smoothDelta =
+      this.smoothDelta * this.movingAverageWeight +
+      delta * (1 - this.movingAverageWeight);
+  }
+
+  render() {
+    this.update();
+    this.ctx.save();
+    this.ctx.textAlign = "right";
+    this.ctx.textBaseline = "bottom";
+    this.ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+    this.ctx.translate(this.canvas.width, this.canvas.height);
+    this.ctx.scale(1.5, 1.5);
+    this.ctx.fillText(`${Math.round(1000 / this.smoothDelta)}FPS`, 0, 0);
+    this.ctx.fill();
+    this.ctx.restore();
+  }
+}
+
+function setup() {
+  const root = document.querySelector("html");
+  root.style.minHeight = "100%";
+  const body = document.querySelector("body");
+  const canvas = document.createElement("canvas");
+  body.insertBefore(canvas, body.firstChild);
+  canvas.id = "dot-canvas";
+  canvas.style.position = "fixed";
+  canvas.style.top = 0;
+  canvas.style.left = 0;
+  canvas.style.bottom = 0;
+  canvas.style.right = 0;
+  const { width, height } = root.getBoundingClientRect();
+  canvas.style.width = width;
+  canvas.style.height = height;
+  const ctx = canvas.getContext("2d");
+  canvas.width = width;
+  canvas.height = height;
+
+  return [ctx, canvas];
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+  const [ctx, canvas] = setup();
+  const perf = new Perf(ctx, canvas);
   // Randomly pick a background
   const background =
     BACKGROUNDS[Math.floor(Math.random() * BACKGROUNDS.length)];
-  background();
+  background(ctx, canvas, perf.render.bind(perf));
 });
