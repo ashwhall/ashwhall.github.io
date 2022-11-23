@@ -27,7 +27,7 @@ navbar-links:
   Blog: "blog"
   Publications: "publications"
   About: "about"
-  Projects:
+  Tools:
     - Jupyter Wrapper: "jupyterwrapper"
     - NN Calculators: "nncalcs"
     - Translations: "translations"
