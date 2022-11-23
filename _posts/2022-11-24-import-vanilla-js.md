@@ -10,7 +10,7 @@ tags:
 published: true
 ---
 
-Here's a little tip which allows you to use ES6 import/export syntax in your vanilla JS files in [supported browsers](https://caniuse.com/es6-module-dynamic-import) (>95% at the time of writing).
+Here's a little tip which allows you to use ES6 import/export syntax in your vanilla JS files in [supported browsers](https://caniuse.com/es6-module-dynamic-import) (over 95% at the time of writing).
 
 You might be used to adding script tags that look like this:
 
@@ -28,7 +28,7 @@ Instead, you can use the ES6 import/export syntax to import your files as you wi
 
 Now you can use the `import` keyword to import other files:
 
-```js
+```javascript
 // foo.js
 export function hello() {
   return "Hello World!";
