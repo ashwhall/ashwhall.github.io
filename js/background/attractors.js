@@ -1,7 +1,7 @@
 export default function (ctx, canvas, renderCallback) {
-  window.addEventListener("mousemove", updateMousePos, false);
-  document.addEventListener("mouseleave", mouseLeave, false);
-  window.addEventListener("click", movePoint, false);
+  window.addEventListener('mousemove', updateMousePos, false);
+  document.addEventListener('mouseleave', mouseLeave, false);
+  window.addEventListener('click', movePoint, false);
   let mousePos = [-1000, -1000];
   const DOTS_PER_PX = 0.00007;
   const MIN_SPEED = 0.3;
@@ -18,9 +18,9 @@ export default function (ctx, canvas, renderCallback) {
 
   const numDots = (w, h) => Math.round(w * h * DOTS_PER_PX);
 
-  const textArr = ["🔴", " 🟢", "🔵"];
+  const textArr = ['🔴', ' 🟢', '🔵'];
   let textArrIdx = 0;
-  const explosionArr = ["💥"];
+  const explosionArr = ['💥'];
   let explosionArrIdx = 0;
 
   let explosions = [];
@@ -260,12 +260,12 @@ export default function (ctx, canvas, renderCallback) {
   }
   // https://stackoverflow.com/questions/1997661/unique-object-identifier-in-javascript/1997811
   (function () {
-    if (typeof Object.id == "undefined") {
+    if (typeof Object.id == 'undefined') {
       var id = 0;
 
       Object.id = function (o) {
-        if (typeof o.__uniqueid == "undefined") {
-          Object.defineProperty(o, "__uniqueid", {
+        if (typeof o.__uniqueid == 'undefined') {
+          Object.defineProperty(o, '__uniqueid', {
             value: ++id,
             enumerable: false,
             // This could go either way, depending on your
@@ -309,7 +309,7 @@ export default function (ctx, canvas, renderCallback) {
   function drawLine(dot) {
     ctx.beginPath();
     // ctx.lineWidth = 5;
-    ctx.fillStyle = "";
+    ctx.fillStyle = '';
     ctx.lineWidth = 3;
 
     dots.forEach((other) => lineBetween(dot, other));
@@ -353,16 +353,16 @@ export default function (ctx, canvas, renderCallback) {
     canvas.height = window.innerHeight;
     canvas.style.width = canvas.width;
     canvas.style.height = canvas.height;
-    ctx.fillStyle = "#FFF";
+    ctx.fillStyle = '#FFF';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     adjustDotCounts(canvas.width, canvas.height);
     dots.forEach(updateDot);
     dots.forEach(applyExplosions);
     dots.forEach(moveDot);
     dots.forEach(drawLine);
-    ctx.font = "8px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     dots.forEach(drawText);
     explosions.forEach(drawExplosion);
     renderCallback();

@@ -1,8 +1,8 @@
 const BACKGROUNDS = [
   (ctx, canvas, renderCallback) => {
-    window.addEventListener("mousemove", updateMousePos, false);
-    document.addEventListener("mouseleave", mouseLeave, false);
-    window.addEventListener("click", movePoint, false);
+    window.addEventListener('mousemove', updateMousePos, false);
+    document.addEventListener('mouseleave', mouseLeave, false);
+    window.addEventListener('click', movePoint, false);
     let mousePos = [-1000, -1000];
     const DOTS_PER_PX = 0.00007;
     const MIN_SPEED = 0.3;
@@ -19,9 +19,9 @@ const BACKGROUNDS = [
 
     const numDots = (w, h) => Math.round(w * h * DOTS_PER_PX);
 
-    const textArr = ["🔴", " 🟢", "🔵"];
+    const textArr = ['🔴', ' 🟢', '🔵'];
     let textArrIdx = 0;
-    const explosionArr = ["💥"];
+    const explosionArr = ['💥'];
     let explosionArrIdx = 0;
 
     let explosions = [];
@@ -262,12 +262,12 @@ const BACKGROUNDS = [
     }
     // https://stackoverflow.com/questions/1997661/unique-object-identifier-in-javascript/1997811
     (function () {
-      if (typeof Object.id == "undefined") {
+      if (typeof Object.id == 'undefined') {
         var id = 0;
 
         Object.id = function (o) {
-          if (typeof o.__uniqueid == "undefined") {
-            Object.defineProperty(o, "__uniqueid", {
+          if (typeof o.__uniqueid == 'undefined') {
+            Object.defineProperty(o, '__uniqueid', {
               value: ++id,
               enumerable: false,
               // This could go either way, depending on your
@@ -311,7 +311,7 @@ const BACKGROUNDS = [
     function drawLine(dot) {
       ctx.beginPath();
       // ctx.lineWidth = 5;
-      ctx.fillStyle = "";
+      ctx.fillStyle = '';
       ctx.lineWidth = 3;
 
       dots.forEach((other) => lineBetween(dot, other));
@@ -355,16 +355,16 @@ const BACKGROUNDS = [
       canvas.height = window.innerHeight;
       canvas.style.width = canvas.width;
       canvas.style.height = canvas.height;
-      ctx.fillStyle = "#FFF";
+      ctx.fillStyle = '#FFF';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       adjustDotCounts(canvas.width, canvas.height);
       dots.forEach(updateDot);
       dots.forEach(applyExplosions);
       dots.forEach(moveDot);
       dots.forEach(drawLine);
-      ctx.font = "8px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
+      ctx.font = '8px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
       dots.forEach(drawText);
       explosions.forEach(drawExplosion);
       renderCallback();
@@ -396,7 +396,7 @@ const BACKGROUNDS = [
         ctx.restore();
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
+        ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
         ctx.fillStyle = this.colour;
         ctx.fill();
       }
@@ -525,7 +525,7 @@ const BACKGROUNDS = [
     }
 
     const balls = [];
-    window.addEventListener("click", (e) => onClick(e, balls), false);
+    window.addEventListener('click', (e) => onClick(e, balls), false);
     loop(ctx, canvas, balls);
   },
 ];
@@ -551,10 +551,10 @@ class Perf {
     ctx.save();
     this.update();
     const prevFill = ctx.fillStyle;
-    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-    ctx.textAlign = "right";
-    ctx.textBaseline = "bottom";
-    ctx.font = "bold 16px arial";
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.font = 'bold 16px arial';
     ctx.fillText(
       `${Math.round(1000 / this.smoothDelta)}FPS`,
       canvas.width,
@@ -567,13 +567,13 @@ class Perf {
 }
 
 function setup() {
-  const root = document.querySelector("html");
-  root.style.minHeight = "100%";
-  const body = document.querySelector("body");
-  const canvas = document.createElement("canvas");
+  const root = document.querySelector('html');
+  root.style.minHeight = '100%';
+  const body = document.querySelector('body');
+  const canvas = document.createElement('canvas');
   body.insertBefore(canvas, body.firstChild);
-  canvas.id = "dot-canvas";
-  canvas.style.position = "fixed";
+  canvas.id = 'dot-canvas';
+  canvas.style.position = 'fixed';
   canvas.style.top = 0;
   canvas.style.left = 0;
   canvas.style.bottom = 0;
@@ -581,14 +581,14 @@ function setup() {
   const { width, height } = root.getBoundingClientRect();
   canvas.style.width = width;
   canvas.style.height = height;
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
   canvas.width = width;
   canvas.height = height;
 
   return [ctx, canvas];
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener('DOMContentLoaded', function () {
   const [ctx, canvas] = setup();
   const perf = new Perf(ctx, canvas);
   // Randomly pick a background

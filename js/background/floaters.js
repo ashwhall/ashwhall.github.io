@@ -14,7 +14,7 @@ export default function (ctx, canvas, renderCallback) {
       ctx.restore();
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-      ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
+      ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
       ctx.fillStyle = this.colour;
       ctx.fill();
     }
@@ -143,6 +143,6 @@ export default function (ctx, canvas, renderCallback) {
   }
 
   const balls = [];
-  window.addEventListener("click", (e) => onClick(e, balls), false);
+  window.addEventListener('click', (e) => onClick(e, balls), false);
   loop(ctx, canvas, balls);
 }
