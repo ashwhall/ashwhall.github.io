@@ -21,7 +21,7 @@ Some existing methods to explain reinforcement learning policies are to visualis
 This is where language models could in the future play a crucial role. Consider an AI system that uses reinforcement learning to control a robot in a warehouse. The learned policy determines the actions the robot should take based on its environment and past experiences, optimising for efficiency and safety. A language model could provide a natural language explanation for this policy, making it easier to understand and interpret. For instance, the robot may pick up a package out of the specified order. \
 Traditionally, this would be difficult to explain, with a visualisation simply showing that the robot preferred this action over others. However, if a LLM were able to enquire about the robot's actions, it could give an explanation like:
 
-> "The robot chose to pick up a larger package out of order because it has learned that this action will clear space and allow it to progress through the remaining packages faster."
+> "The robot chose to pick up a larger package out of order because this action will clear space and allow it to progress through the remaining packages faster."
 
 This type of explanation increases the transparency and accountability of the AI system, helping to ensure that it is aligned with human objectives and preferences.
 
