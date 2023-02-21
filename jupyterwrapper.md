@@ -4,6 +4,8 @@ title: Jupyter Wrapper
 subtitle: A GUI application for Jupyter notebook
 ---
 
+**Note: this project is very old and unmaintained.**
+
 ### What is it?
 This Windows application provides a GUI interface for [Jupyter](http://jupyter.org/), with the ability to be hidden to the notification area. This is _much_ more convenient than needing a command prompt left open while the server is running.
 It also provides the ability to remotely restart the Jupyter server remotely via a browser.
