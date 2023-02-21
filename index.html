@@ -6,48 +6,41 @@ use-site-title: true
 ---
 
 <style>
-#scroll-container {
+.wrapper {
+  max-width: 100%;
   overflow: hidden;
 }
 
-#scroll-text { 
-  -moz-animation: my-animation 15s linear infinite;
-  -webkit-animation: my-animation 15s linear infinite;
-  animation: my-animation 15s linear infinite;
-  
-  /* Text style */
+.marquee {
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-block;
+  animation: marquee 10s linear infinite;
+}
+
+.marquee p {
+  display: inline-block;
   font-style: italic;
   font-size: 1.5rem;
-  white-space: nowrap;
 }
 
-/* for Firefox */
-@-moz-keyframes my-animation {
-  from { -moz-transform: translateX(50%); }
-  to { -moz-transform: translateX(-50%); }
-}
-
-/* for Chrome */
-@-webkit-keyframes my-animation {
-  from { -webkit-transform: translateX(50%); }
-  to { -webkit-transform: translateX(-50%); }
-}
-
-@keyframes my-animation {
-  from {
-    -moz-transform: translateX(50%);
-    -webkit-transform: translateX(50%);
-    transform: translateX(50%);
+@keyframes marquee {
+  0% {
+    transform: translate3d(0, 0, 0);
   }
-  to {
-    -moz-transform: translateX(-50%);
-    -webkit-transform: translateX(-50%);
-    transform: translateX(-50%);
+  100% {
+    transform: translate3d(-50%, 0, 0);
   }
+}
 </style>
 
-<div id="scroll-container">
-  <div id="scroll-text">
-   Deep learning / Computer vision / PyTorch / Typescript / React.js / Terraform / GraphQL / Django / Google Cloud / Deep learning / Computer vision / PyTorch / Typescript / React.js / Terraform / GraphQL / Django / Google Cloud
+<div class="wrapper">
+  <div class="marquee">
+    <p>
+      Deep learning / Computer vision / PyTorch / Typescript / React.js / Terraform / GraphQL / Django / Google Cloud / Deep learning / Computer vision / PyTorch / Typescript / React.js / Terraform / GraphQL / Django / Google Cloud
+    </p>
+    <p>
+      Deep learning / Computer vision / PyTorch / Typescript / React.js / Terraform / GraphQL / Django / Google Cloud / Deep learning / Computer vision / PyTorch / Typescript / React.js / Terraform / GraphQL / Django / Google Cloud
+    </p>
   </div>
 </div>
