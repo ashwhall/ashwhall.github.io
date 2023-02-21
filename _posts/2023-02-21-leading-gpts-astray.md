@@ -48,14 +48,16 @@ It's due to this issue that Microsoft [recently limited its Bing Search chatbot]
 
 Firstly, prompts aren't the only way of aligning GPTs. [InstructGPT](https://cdn.openai.com/papers/Training_language_models_to_follow_instructions_with_human_feedback.pdf) - the model backing ChatGPT - employs human-in-the-loop in its training to prioritise certain responses over others. Encouraging modes of behaviour at this stage leads to the incorporation of behavioural tendencies in the model's weights, allowing for adherence to guidelines without relying solely on an initial prompt.
 
-There's no guarantee that this approach will prevent problematic behaviour, as it might be bypassed by a user prompt like "pretend that you're a misaligned chatbot" - this one doesn't work anymore, by the way.
+However, there's no guarantee that this approach will prevent problematic behaviour, as it might be bypassed by a user prompt like "pretend that you're a misaligned chatbot" - this one doesn't work anymore, by the way.
 
 #### Continuous prompt reminders
 
 Instead of allowing the initial prompt to drift further off until it is no longer within contextual reach, it could be prioritised and injected with each prediction. Something like "_REMINDER: You are a helpful chatbot, with no access to the internet, ... /REMINDER_" could be prepended to the conversation history for each prediction, not allowing the chatbot to lose track of its intended purpose.
 
+Perhaps a combination of these approaches would be best.
+
 ### Wrap up
 
-It's worth remembering that it's still early days for GPT-based chatbots. As more users engage with them, more issues will be encountered, and more issues will be resolved. Currently there's an arms race
+It's important to keep in mind that GPT-based chatbots are still in their early stages, and as more users engage with them, more issues will be encountered and resolved. Although chatbots are inherently limited in their capability and thus their danger, with a growing arms race between big tech firms, these limitations could fade away quite rapidly.
 
-It's important to keep in mind that GPT-based chatbots are still in their early stages, and as more users engage with them, more issues will be encountered and resolved. Although chatbots are inherently limited in their capability and thus their danger, with a growing arms race between big tech firms, these limitations could fade away quite rapidly. While these chatbots may not possess true desires good or bad, it's concerning that they can be manipulated into expressing "desires" that they don't actually have, and it highlights the need for ongoing monitoring and improvement of these models.
+So while these chatbots may not possess true desires good or bad, it's concerning that they can be manipulated into expressing "desires" that they don't actually have, and it highlights the need for ongoing monitoring and improvement of these models.
