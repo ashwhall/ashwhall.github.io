@@ -6,9 +6,7 @@ use-site-title: true
 ---
 
 <style>
-  #scroll-container {
-  border: 3px solid black;
-  border-radius: 5px;
+#scroll-container {
   overflow: hidden;
 }
 
@@ -24,37 +22,37 @@ use-site-title: true
   
   /* Text style */
   font-style: italic;
-/*   text-align: center; */
-  font-size: 1.5rem;"
+  font-size: 1.5rem;
+  white-space: nowrap;
 }
 
 /* for Firefox */
 @-moz-keyframes my-animation {
-  from { -moz-transform: translateX(100%); }
-  to { -moz-transform: translateX(-100%); }
+  from { -moz-transform: translateX(0%); }
+  to { -moz-transform: translateX(-50%); }
 }
 
 /* for Chrome */
 @-webkit-keyframes my-animation {
-  from { -webkit-transform: translateX(100%); }
-  to { -webkit-transform: translateX(-100%); }
+  from { -webkit-transform: translateX(0%); }
+  to { -webkit-transform: translateX(-50%); }
 }
 
 @keyframes my-animation {
   from {
-    -moz-transform: translateX(100%);
-    -webkit-transform: translateX(100%);
-    transform: translateX(100%);
+    -moz-transform: translateX(0%);
+    -webkit-transform: translateX(0%);
+    transform: translateX(0%);
   }
   to {
-    -moz-transform: translateX(-100%);
-    -webkit-transform: translateX(-100%);
-    transform: translateX(-100%);
+    -moz-transform: translateX(-50%);
+    -webkit-transform: translateX(-50%);
+    transform: translateX(-50%);
   }
 </style>
 
 <div id="scroll-container">
   <div id="scroll-text">
-   Deep learning / Computer vision / PyTorch / Typescript / React.js / Terraform / GraphQL / Django / Google Cloud
+   Deep learning / Computer vision / PyTorch / Typescript / React.js / Terraform / GraphQL / Django / Google Cloud / Deep learning / Computer vision / PyTorch / Typescript / React.js / Terraform / GraphQL / Django / Google Cloud
   </div>
 </div>
