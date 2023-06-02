@@ -1,0 +1,3 @@
+[submodule "chromepage"]
+	path = chromepage
+	url = https://github.com/ashwhall/chromepage.git
