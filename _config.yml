@@ -25,7 +25,7 @@ description: Deep Learning Engineer / Software Developer
 navbar-links:
   Home: "index"
   Blog: "blog"
-  Publications: "publications"
+  Papers: "papers"
   About: "about"
   Tools:
     - Jupyter Wrapper: "jupyterwrapper"
