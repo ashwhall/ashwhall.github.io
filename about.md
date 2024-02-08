@@ -3,7 +3,7 @@ layout: page
 title: About
 ---
 
-I'm a machine learning engineer and software engineer experienced in full-stack web development and deep learning, with just enough iOS experience to be dangerous.
+I'm a machine learning engineer / software engineer experienced in full-stack web development and deep learning, with just enough iOS experience to be dangerous.
 
 ### Experience
 
