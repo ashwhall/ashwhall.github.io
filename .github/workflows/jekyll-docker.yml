@@ -1,0 +1,5 @@
+name: Jekyll site CI
+
+on: {}
+
+jobs: {}
