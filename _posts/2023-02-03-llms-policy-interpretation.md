@@ -2,16 +2,13 @@
 layout: post
 title: LLMs for Policy Interpretation
 subtitle: LLMs may be the key to making reinforcement learning policies more understandable.
-gh-badge:
-  - follow
 tags:
   - reinforcement learning
   - language models
   - deep learning
-published: true
 ---
 
-Deep reinforcement learning has proven to be a highly successful method for creating intelligent systems in recent times. However, the policies - which determine the actions of an agent based on its environment – are often complex, opaque, and difficult to understand. This barrier prevents deep interrogation and understanding of the decision-making process utilised by the RL model.
+Deep reinforcement learning has proven to be a highly successful method for creating intelligent systems in recent times. However, the policies - which determine the actions of an agent based on its environment – are often complex, opaque, and difficult to understand.<!--more--> This barrier prevents deep interrogation and understanding of the decision-making process utilised by the RL model.
 
 On the other hand, natural language models have made [significant progress](https://www.sciencefocus.com/future-technology/gpt-3/) in the past few years, providing a basis for human-AI interaction. These models may be the key to bridging the gap between reinforcement learning policies and human understanding. By providing natural language explanations for reinforcement learning policies, it becomes easier to understand and interpret them, leading to more effective AI systems that are better [aligned](https://en.wikipedia.org/wiki/AI_alignment) with human objectives and preferences.
 

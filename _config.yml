@@ -1,235 +1,64 @@
-# --- General options --- #
-
-# url is the full website URL
-# baseurl is the website's URL without the hostname
-
-# If you are building a simple GitHub user page (http://username.github.io) then use these settings:
-url: "https://ashwhall.github.io"
-baseurl: ""
-
-# If you are building a GitHub project page then use these settings:
-#url: "http://username.github.io/projectname"
-#baseurl: "/projectname"
-
-# Of course don't forget to change the username and projectname to YOUR username and project
-
-# Name of website
-title: Ash Hall
-
-# Short description of your site
-description: Deep Learning Engineer / Software Developer
-
-# --- Navigation bar options --- #
-
-# List of links in the navigation bar
-navbar-links:
-  Home: "index"
-  Blog: "blog"
-  Papers: "papers"
-  About: "about"
-  Tools:
-    - Jupyter Wrapper: "jupyterwrapper"
-    - NN Calculators: "nncalcs"
-    - Translations: "translations"
-
-# Image to show in the navigation bar - image must be a square (width = height)
-# Remove this parameter if you don't want an image in the navbar
-avatar: "/img/profile-pic.jpg"
-
-# If you want to have an image logo in the top-left corner instead of the title text,
-# then specify the following parameter
-# title-img: /path/to/image
-
-# --- Background colour/image options --- #
-
-# Personalize the colors in your website. Colour values can be any valid CSS colour
-
-navbar-col: "#F5F5F5"
-navbar-text-col: "#404040"
-navbar-children-col: "#F5F5F5"
-page-col: "#FFFFFF"
-link-col: "#008AFF"
-hover-col: "#0085A1"
-footer-col: "#F5F5F5"
-footer-text-col: "#777777"
-footer-link-col: "#404040"
-
-# Alternatively, the navbar, footer, and page background can be set to use background images
-# instead of colour
-
-# navbar-img: "/img/bgimage.png"
-# footer-img: "/img/bgimage.png"
-# page-img: "/img/bgimage.png"
-
-# --- Footer options --- #
-
-# Change all these values or delete the ones you don't want.
-# Important: you must keep the "name" parameter, everything else you can remove
-author:
-  name: Ash Hall
-
-# Select your active Social Network Links.
-# Uncomment the links you want to show in the footer and add your information to each link.
-# You can reorder the items to define the link order.
-# If you want to add a new link that isn't here, you'll need to also edit the file _data/SocialNetworks.yml
-social-network-links:
-  email: "ashwhall@gmail.com"
-  telephone: (+61) 434464390
-  gitlab: ashwhall
-  github: ashwhall
-  linkedin: ashwhall
-#  facebook: hallashw
-#  twitter: ashwhall
-#  google-plus: +DeanAttali
-#  xing: yourname
-#  stackoverflow: "3943160/daattali"
-#  snapchat: deanat78
-#  instagram: deanat78
-#  youtube: user/deanat78
-#  spotify: yourname
-#  steam: deanat78
-#  twitch: yourname
-#  yelp: yourname
-
-# Select which share links to show in posts
-share-links-active:
-  twitter: true
-  facebook: true
-#  linkedin: true
-
-# How to display the link to the website in the footer
-# Remove this if you don't want a link in the footer
-# url-pretty: "AshwHall.com"  # eg. "deanattali.com/beautiful-jekyll"
-
-# --- Web Statistics Section --- #
-
-# Fill in your Google Analytics ID to track your website using GA
-google_analytics: "G-3MZE8FVD9N"
-
-# Google Tag Manager ID
-gtm: "G-3MZE8FVD9N"
-
-# Matomo (aka Piwik) Web statistics
-# Uncomment the following section to enable Matomo. The opt-out parameter controls
-# whether or not you want to allow users to opt out of tracking.
-
-#matomo:
-#  site_id: "9"
-#  uri: "demo.wiki.pro"
-#  opt-out: true
-
-# --- Misc --- #
-# Fill in your Disqus shortname (NOT the userid) if you want to support Disqus comments
-disqus: "ashwhall-github-io"
-
-# Facebook App ID
-# fb_app_id: ""
-
-# Excerpt Word Length
-# Truncates the excerpt to the specified number of words on the index page
-excerpt_length: 50
-
-# Character used to separate site title and description in HTML document title
-# and RSS feed title
-title-separator: "-"
-
-# --- Don't need to touch anything below here (but you can if you want) --- #
-
-# Output options (more information on Jekyll's site)
-timezone: "Australia/Melbourne"
+# Dependencies
 markdown: kramdown
 highlighter: rouge
+
+# Permalinks
 permalink: /:year-:month-:day-:title/
+
+# Setup
+title: Ash Hall
+tagline: 'A Jekyll theme'
+description: 'Machine learning research engineer; Software engineer'
+url: http://hyde.getpoole.com
+baseurl: ashwhall.github.io
+
+author:
+  name: 'Ash Hall'
+
 paginate: 5
+paginate_dir: 'posts'
+paginate_path: 'posts/page:num'
+excerpt_separator: <!--more-->
 
-kramdown:
-  input: GFM
+sidebar_links:
+  - title: 'Home'
+    url: '/'
+  - title: 'About'
+    url: '/about/'
+  - title: 'Papers'
+    url: '/papers/'
+  - title: 'Posts'
+    url: '/posts/'
+  # TODO: Add projects
+  # - title: "Projects"
+  #   url: "/projects/"
 
-paginate_path: "/blog/page:num/"
+collections:
+  projects:
+    output: true
+    permalink: /projects/:path/
 
-# Default YAML values (more information on Jekyll's site)
-defaults:
-  - scope:
-      path: ""
-      type: "posts"
-    values:
-      layout: "post"
-      comments: true # add comments to all blog posts
-      social-share: true # add social media sharing buttons to all blog posts
-  - scope:
-      path: "" # all files
-    values:
-      layout: "page"
-      show-avatar: true
+social_links:
+  - name: 'Email'
+    url: 'mailto:ashwhall@gmail.com'
+    faicon: 'envelope'
+  - name: 'Phone'
+    url: 'tel:(+61) 434464390'
+    faicon: 'phone'
+  - name: 'Github'
+    url: 'https://github.com/ashwhall'
+    faicon: 'github'
+  - name: 'Gitlab'
+    url: 'https://gitlab.com/ashwhall'
+    faicon: 'gitlab'
+  - name: 'LinkedIn'
+    url: 'https://linkedin.com/in/ashwhall'
+    faicon: 'linkedin'
 
-# Use tags index page and make tags on each post clickable
-link-tags: true
-
-# Exclude these files from production site
-exclude:
-  - CHANGELOG.md
-  - CNAME
-  - Dockerfile
-  - Gemfile
-  - Gemfile.lock
-  - LICENSE
-  - README.md
-  - Vagrantfile
-
-# prose.io config
-prose:
-  rooturl: "_posts"
-  media: "img"
-  ignore:
-    - 404.html
-    - LICENSE
-    - feed.xml
-    - _config.yml
-    - /_layouts
-    - /_includes
-    - /css
-    - /img
-    - /js
-  metadata:
-    _posts:
-      - name: "layout"
-        field:
-          element: "hidden"
-          value: "post"
-      - name: "title"
-        field:
-          element: "text"
-          label: "Post title"
-          placeholder: "Title"
-          alterable: true
-      - name: "subtitle"
-        field:
-          element: "textarea"
-          label: "Subtitle"
-          placeholder: "A description of your post."
-          alterable: true
-      - name: "date"
-        field:
-          element: "text"
-          label: "Date"
-          help: "Enter date of post."
-          placeholder: "yyyy-mm-dd"
-          alterable: true
-      - name: "image"
-        field:
-          element: "text"
-          label: "Image"
-          help: "Add a thumbnail image to your post."
-          placeholder: "Thumbnail"
-          alterable: true
-      - name: "published"
-        field:
-          element: "checkbox"
-          label: "Publish"
-          help: "Check to publish post, uncheck to hide."
+# Custom vars
+version: 0.1.0
 
 plugins:
   - jekyll-paginate
-  - jekyll-sitemap
-# Beautiful Jekyll / Dean Attali
-# 2fc73a3a967e97599c9763d05e564189
+
+google_analytics: 'G-3MZE8FVD9N'

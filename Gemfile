@@ -1,7 +1,13 @@
-source 'https://rubygems.org'
+# frozen_string_literal: true
 
-gem "github-pages", '163', group: :jekyll_plugins
+source "https://rubygems.org"
 
-# enable tzinfo-data for local build
-# gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw]
-gem 'jekyll-paginate'
+git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
+
+# gem "rails"
+
+gem "jekyll", "~> 4.3"
+
+gem "mercenary", "~> 0.4.0"
+
+gem "jekyll-paginate", "~> 1.1"

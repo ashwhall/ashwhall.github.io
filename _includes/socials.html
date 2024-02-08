@@ -1,0 +1,11 @@
+<div class="socials-container">
+  {%- for link in site.social_links -%}
+  <a href="{{link.url}}" title="{{ link.name }}" class="socials-btn">
+    <span class="fa-stack fa-lg" aria-hidden="true">
+      <i class="fa fa-circle fa-stack-2x"></i>
+      <i class="fa fa-{{link.faicon }} fa-stack-1x fa-inverse grow"></i>
+    </span>
+    <span class="sr-only">{{ link.name }}</span></a
+  >
+  {%- endfor -%}
+</div>

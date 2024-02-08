@@ -2,15 +2,14 @@
 layout: post
 title: Importing Vanilla JS Files
 subtitle: How to break up your code into multiple files when using vanilla JS.
-gh-badge:
-  - follow
 tags:
   - javascript
   - html
-published: true
 ---
 
 Here's a little tip which allows you to use ES6 import/export syntax in your vanilla JS files in [supported browsers](https://caniuse.com/es6-module-dynamic-import) (over 95% at the time of writing).
+
+<!--more-->
 
 You might be used to adding script tags that look like this:
 

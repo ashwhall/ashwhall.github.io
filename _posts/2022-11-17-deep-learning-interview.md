@@ -4,15 +4,14 @@ title: Deep Learning Interview
 subtitle: >-
   Transcript of an interview filmed for La Trobe University's Deep Learning
   subject
-gh-badge:
-  - follow
 tags:
   - interview
   - deep learning
-published: true
 ---
 
 This interview was conducted by Zhen He of La Trobe University, Melbourne, for his subject CSE5DL - Deep Learning. My answers were prepared before the interview and filmed for presentation throughout the course.
+
+<!--more-->
 
 At the time of this interview I'm employed by the Australian Institute of Sport as the machine learning research engineer lead, so my answers are given mostly within that context.
 
@@ -43,7 +42,7 @@ My weapon of choice for deep learning is PyTorch, which is an open-source machin
 
 ## _What do you like about Pytorch?_
 
-The main thing I like about PyTorch is how intuitive it is. It's a very sensibly designed framework, where it's opinionated enough for users to mostly converge towards a consistent implementation, while being unopinionated enough to remain versatile. In fact, it doesn't need to be used for machine learning at all, and is actually quite fit-for-purpose for a large variety of GPU computation tasks. 
+The main thing I like about PyTorch is how intuitive it is. It's a very sensibly designed framework, where it's opinionated enough for users to mostly converge towards a consistent implementation, while being unopinionated enough to remain versatile. In fact, it doesn't need to be used for machine learning at all, and is actually quite fit-for-purpose for a large variety of GPU computation tasks.
 
 As an example, there is a mathematical model called "NURBS" - which stands for non-uniform rational basis spline - which is used to represent and compute curves and surfaces, often for engineering and manufacturing. It's a fairly complicated algorithm and can be slow to compute in large numbers. I implemented a version of this in PyTorch and compared it to another Python library, to find that my implementation was on the order of 100 times faster than the pre-existing library. That's a great testament to the flexibility of PyTorch, more than it is to my programming abilities.
 
