@@ -10,7 +10,7 @@ title: Ash Hall
 tagline: 'A Jekyll theme'
 description: 'Machine learning research engineer; Software engineer'
 url: http://hyde.getpoole.com
-baseurl: ashwhall.github.io
+baseurl: https://ashwhall.github.io
 
 author:
   name: 'Ash Hall'
