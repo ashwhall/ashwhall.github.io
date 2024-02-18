@@ -7,7 +7,7 @@ title: Papers
 
 _Physiological trait prediction of wheat samples with convolutional neural networks._
 
-[Link](https://doi.org/10.1186/s13007-021-00806-6) ・ [PDF](/download/Furbank_et_al-2021-Plant_Methods.pdf)
+[Link](https://doi.org/10.1186/s13007-021-00806-6) ・ [PDF](download/Furbank_et_al-2021-Plant_Methods.pdf)
 
 ```tex
 @article{Furbank2021,
