@@ -11,12 +11,14 @@ layout: default
   {% endif %} {{ content }}
 </div>
 
-<div class="tags">
-  <h3>Tags</h3>
+{% if page.tags.size > 0 %}
+  <div class="tags">
+  <span>Tags:</span>
   {% for tag in page.tags %}
-  <a href="/tags#{{tag[0]}}">{{- tag[0] -}}</a>
+    <a href="{{ '/tags' | relative_url }}#{{- tag -}}">{{- tag -}}</a>
   {% endfor %}
-</div>
+  </div>
+{% endif %}
 
 <div class="related">
   <h3>Related Posts</h3>
