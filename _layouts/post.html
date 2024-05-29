@@ -11,7 +11,12 @@ layout: default
   {% endif %} {{ content }}
 </div>
 
-<div class="tags"></div>
+<div class="tags">
+  <h3>Tags</h3>
+  {% for tag in page.tags %}
+  <a href="/tags#{{tag[0]}}">{{- tag[0] -}}</a>
+  {% endfor %}
+</div>
 
 <div class="related">
   <h3>Related Posts</h3>
@@ -27,9 +32,4 @@ layout: default
     </li>
     {% endfor %}
   </ul>
-
-  <h3>Tags</h3>
-  {% for tag in site.tags %}
-  <a href="/tags#{{tag[0]}}">{{- tag[0] -}}</a>
-  {% endfor %}
 </div>
