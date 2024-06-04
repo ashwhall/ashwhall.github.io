@@ -54,6 +54,9 @@ social_links:
   - name: 'LinkedIn'
     url: 'https://linkedin.com/in/ashwhall'
     faicon: 'linkedin'
+  - name: 'YouTube'
+    url: 'https://www.youtube.com/@ashwhall'
+    faicon: 'youtube'
 
 # Custom vars
 version: 0.1.0
