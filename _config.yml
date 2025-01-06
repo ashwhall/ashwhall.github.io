@@ -8,7 +8,7 @@ permalink: /:year-:month-:day-:title/
 # Setup
 title: Ash Hall
 tagline: 'A Jekyll theme'
-description: 'Machine learning research engineer; Software engineer'
+description: 'Software engineer; Machine learning research engineer'
 url: http://ashwhall.github.io/
 baseurl: https://ashwhall.github.io/
 
