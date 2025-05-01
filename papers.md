@@ -1,6 +1,30 @@
 ---
 layout: page
 title: Papers
+
+---
+
+#### Evaluation of a custom trained human pose estimation model for kinematic analysis of pole vault performance
+
+_A comparative analysis of a custom three-camera markerless human pose estimation model against a marker-based system._
+
+[Link](https://doi.org/10.1080/02640414.2025.2490418) ・ [PDF](#)
+
+```tex
+@article{Baker2025,
+	url = {https://doi.org/10.1080/02640414.2025.2490418},
+	doi = {10.1080/02640414.2025.2490418},
+	issn = {0264-0414},
+	year = {2025},
+	month = {apr},
+	day = {13},
+	publisher = {Routledge},
+	author = {James Baker and Aaron Balloch and Peter Peeling and Machar Reid and Ash Hall and Helen Bayne},
+	title = {Evaluation of a custom trained human pose estimation model for kinematic analysis of pole vault performance},
+	journal = {Journal of Sports Sciences}
+}
+```
+
 ---
 
 #### Wheat physiology predictor: predicting physiological traits in wheat from hyperspectral reflectance measurements using deep learning
