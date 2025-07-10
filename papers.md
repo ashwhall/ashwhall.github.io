@@ -55,7 +55,7 @@ _Physiological trait prediction of wheat samples with convolutional neural netwo
 
 _Automated swimming analysis with convolutional neural networks on video data._
 
-[Link](https://doi.org/10.1007/s00521-020-05485-3) ・ [PDF](/download/Hall2020_Article_TheDetectionTrackingAndTempora.pdf)
+[Link](https://doi.org/10.1007/s00521-020-05485-3) ・ [PDF](https://ashwhall.github.io/download/Hall2020_Article_TheDetectionTrackingAndTempora.pdf)
 
 ```tex
 @article{Hall_2020,
@@ -75,7 +75,7 @@ _Automated swimming analysis with convolutional neural networks on video data._
 
 _Swimming analysis with convolutional neural networks._
 
-[Link](https://commons.nmu.edu/isbs/vol37/iss1/112/) ・ [PDF](/download/A_NEW_PARADIGM.pdf)
+[Link](https://commons.nmu.edu/isbs/vol37/iss1/112/) ・ [PDF](https://ashwhall.github.io/download/A_NEW_PARADIGM.pdf)
 
 ```tex
 @article{Elipot_2019,
@@ -98,7 +98,7 @@ _Swimming analysis with convolutional neural networks._
 
 _A method for distributed training of deep neural networks specifically designed to run in low-budget environments._
 
-[Link](https://ieeexplore.ieee.org/abstract/document/8354695) ・ [PDF](/download/TPDS_MPCA_SGD.pdf)
+[Link](https://ieeexplore.ieee.org/abstract/document/8354695) ・ [PDF](https://ashwhall.github.io/download/TPDS_MPCA_SGD.pdf)
 
 ```tex
 @article{Langer_2018,
@@ -122,7 +122,7 @@ _A method for distributed training of deep neural networks specifically designed
 
 _Few-Shot Continuous Meta-Learning with Neural Networks. Thesis submitted for the Computer Science Honours, 2018._
 
-[Thesis](/download/honours-thesis.pdf) ・ [Literature Survey](/download/honours-literature-survey.pdf) ・ [Directed Study](/download/honours-directed-study-report.pdf)
+[Thesis](/download/honours-thesis.pdf) ・ [Literature Survey](https://ashwhall.github.io/download/honours-literature-survey.pdf) ・ [Directed Study](https://ashwhall.github.io/download/honours-directed-study-report.pdf)
 
 ---
 
