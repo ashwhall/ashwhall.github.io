@@ -25,7 +25,7 @@ My professional roles have required me to be a jack of most trades. This has res
 - **2021 - 2024** Research Engineer Lead [Australian Institute of Sport]
 - **2020 - 2021** Machine Learning Research Engineer [Australian National University]
 - **2017 - 2021** Machine Learning Research Engineer [La Trobe University]
-- **2014 - 2021** Computer Science Subject Tutor (>5 subjects across all year levels) [La Trobe University]
+- **2014 - 2021** Computer Science Subject Tutor/Demonstrator [La Trobe University]
 
 ### Education History
 
