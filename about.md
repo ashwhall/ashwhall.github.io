@@ -3,7 +3,7 @@ layout: page
 title: About
 ---
 
-I'm a machine learning engineer / software engineer experienced in full-stack web development and deep learning, with just enough iOS experience to be dangerous.
+I'm a software engineer / machine learning engineer experienced in full-stack web development and deep learning, with just enough iOS experience to be dangerous.
 
 ### Experience
 
@@ -20,7 +20,8 @@ My professional roles have required me to be a jack of most trades. This has res
 
 ### Employment History
 
-- **2024 - present** Senior Software Developer [Green Energy Trading]
+- **2025 - present** Development Manager [Green Energy Trading]
+- **2024 - 2025** Senior Software Developer [Green Energy Trading]
 - **2021 - 2024** Research Engineer Lead [Australian Institute of Sport]
 - **2020 - 2021** Machine Learning Research Engineer [Australian National University]
 - **2017 - 2021** Machine Learning Research Engineer [La Trobe University]
