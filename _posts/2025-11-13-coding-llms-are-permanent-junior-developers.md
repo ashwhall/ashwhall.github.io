@@ -20,12 +20,12 @@ same goes for reviewing the code of a specialist that's working somewhat out of 
 the code of a senior who's in their comfort zone, **it usually shows**.
 
 Developers gain a sixth sense over time (sure, I'm being a little melodramatic) particularly by reading and reviewing
-code, which allows them to detect when they're reading code like this. It all seems to fit together neatly, and you can
-almost feel the confidence of the author, as the solution is evidently well thought out. _And this changes the way we
-review their code_.
+code, which allows them to detect when they're reading code of this type. It all seems to fit together neatly, and you
+can almost feel the confidence of the author, as the solution is evidently well thought out. _And this changes the way
+we review their code_.
 
-> Not to suggest that we bindly trust senior developers - far from it - but there is an implicit level of trust during
-> the review process that affects how we read and interpret the code.
+> This is not to suggest that we should or do bindly trust senior developers - far from it - but there is an implicit
+> level of trust during the review process that affects how we read and interpret the code.
 
 The challenge with Large Language coding Models is that they are **ostensibly** good developers. They dominate coding
 benchmarks, are fluent in many programming languages, and produce code that often looks like it was written by a
@@ -37,6 +37,9 @@ The very nature of LLMs is to be a probabalistic token predictor. No matter the 
 next-token prediction, Reinforcement Learning by Human Feedback, or any other paradigm, they are fundamentally built to
 produce text that is likely to appear in the given context, albeit stochastically. Even reasoning models\* are just next-
 token predictors with some tricks to give the illusion of thought and rationale.
+
+\*_This is true for text-based reasoning models, where the reasoning is part of the same stream of token predictions as
+the rest of the model outputs. Latent-space reasoning and future architectures may differ._
 
 Take this Typescript example:
 
