@@ -11,7 +11,7 @@ tags:
 Code review is - or at least should be - an integral part of any development team's process. A good team should also
 comprise developers of varying abilities and skill sets, ranging from junior to senior, from generalist to specialist.
 When reviewing a pull request, as much as we desire for the process to be objective and consistent, it is often the case
-that it matters _who the author is_.
+that it matters _who the author is_.<!--more-->
 
 ### The influence of experience on code review
 
