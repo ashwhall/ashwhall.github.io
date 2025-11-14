@@ -13,6 +13,8 @@ comprise developers of varying abilities and skill sets, ranging from junior to 
 When reviewing a pull request, as much as we desire for the process to be objective and consistent, it is often the case
 that it matters _who the author is_.
 
+### The influence of experience on code review
+
 When reviewing a junior's code, you'll generally pay closer attention to every detail, taking little for granted. The
 same goes for reviewing the code of a specialist that's working somewhat out of their domain. When reviewing the code of
 a senior who's in their comfort zone, however, **it usually shows**.
@@ -31,14 +33,14 @@ seasoned developer. However - and this is a big one - they are only good at prod
 
 ### A deviation to explain LLM behaviour
 
-The very nature of LLMs is to be a probabalistic token predictor. No matter the pre-training, be it self-supervised
+The very nature of LLMs is to be a probabalistic token predictor. No matter the pre-training - be it self-supervised
 next-token prediction, Reinforcement Learning by Human Feedback, or any other paradigm, they are fundamentally built to
 produce text that is likely to appear in the given context, albeit stochastically. Even reasoning models\* are just next-
 token predictors with some tricks to give the illusion of thought and rationale.
 
 Take this Typescript example:
 
-![screenshot of Claude chat](public/images/2025-11-13-img-1.png)
+![screenshot of Claude chat](/public/images/2025-11-13-img-1.png)
 
 I asked [Claude](https://claude.ai/) for suggestions on how to return `undefined` for a given MongoDB document field,
 if a boolean flag is false, essentially masking out the field. Although this suggestion will work when trying to _read_
@@ -59,7 +61,7 @@ undefined, failing the push.
 
 What's interesting though, is what I left out of the screenshot above:
 
-![screenshot of Claude chat 2](public/images/2025-11-13-img-2.png)
+![screenshot of Claude chat 2](/public/images/2025-11-13-img-2.png)
 
 Claude _knew that the code wouldn't work as intended_, but still suggested it. This is (likely) due to the stochastic
 nature of LLMs. It sampled a token sequence for the title suggesting this idea - `3. Getter in Schema...` and had to
