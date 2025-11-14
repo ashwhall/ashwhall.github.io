@@ -16,8 +16,8 @@ that it matters _who the author is_.<!--more-->
 ### The influence of experience on code review
 
 When reviewing a junior's code, you'll generally pay closer attention to every detail, taking little for granted. The
-same goes for reviewing the code of a specialist that's working somewhat out of their domain. When reviewing the code of
-a senior who's in their comfort zone, however, **it usually shows**.
+same goes for reviewing the code of a specialist that's working somewhat out of their domain. However, when reviewing
+the code of a senior who's in their comfort zone, **it usually shows**.
 
 Developers gain a sixth sense over time (sure, I'm being a little melodramatic) particularly by reading and reviewing
 code, which allows them to detect when they're reading code like this. It all seems to fit together neatly, and you can
