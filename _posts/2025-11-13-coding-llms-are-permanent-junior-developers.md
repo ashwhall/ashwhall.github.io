@@ -50,7 +50,7 @@ Although this suggestion will work when trying to _read_ the `batteries` field, 
 As a result, the below may fail:
 
 ```ts
-User.updateOne(
+Battery.updateOne(
   { _id: someId },
   {
     $push: { batteries: 'tesla-powerwall-2' },
