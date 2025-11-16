@@ -50,17 +50,13 @@ Although this suggestion will work when trying to _read_ the `batteries` field, 
 As a result, the below may fail:
 
 ```ts
-Battery.updateOne(
-  { _id: someId },
-  {
-    $push: { batteries: 'tesla-powerwall-2' },
-    $set: { hasBatteries: true },
-  }
-);
+system.batteries.push('tesla-powerwall-2');
+system.hasBatteries = true;
+await system.save();
 ```
 
-Depending on the update order, if `batteries` are attempted to be set first, the getter will be invoked, and return
-undefined, failing the push.
+`batteries` are attempted to be set first, the getter is invoked, returning
+undefined, failing the push. It introduces a subtle dependency between the two which is likely to cause unexpected behaviour/exceptions.
 
 What's interesting though, is what I left out of the screenshot above:
 
