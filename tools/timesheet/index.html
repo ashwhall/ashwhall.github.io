@@ -922,8 +922,15 @@
           const noteText = state.notes[dayKey] || '';
           noteDisplay.className = `day-note${noteText ? '' : ' day-note-empty'}`;
           noteDisplay.textContent = noteText || 'Add note…';
-          noteDisplay.setAttribute('role', 'button');
-          noteDisplay.setAttribute('aria-label', `${DAY_LABELS[dayKey]} note`);
+          noteDisplay.setAttribute('tabindex', '0');
+          noteDisplay.setAttribute('aria-label', `${DAY_LABELS[dayKey]} note — click to edit`);
+          noteDisplay.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              editingNoteDay = dayKey;
+              renderDays();
+            }
+          });
           noteDisplay.addEventListener('click', () => {
             editingNoteDay = dayKey;
             renderDays();
