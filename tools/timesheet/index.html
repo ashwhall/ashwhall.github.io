@@ -185,7 +185,6 @@
     }
 
     .day-total {
-      cursor: pointer;
       padding: 0.25rem 0.75rem;
       border-radius: 2rem;
       border: none;
@@ -194,15 +193,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.3rem;
       font-size: 0.9375rem;
       font-weight: 600;
-      box-shadow: none;
-      transition: opacity 0.15s;
-    }
-
-    .day-total:hover {
-      opacity: 0.82;
     }
 
     .day-total.has-hours {
@@ -470,13 +462,6 @@
           <span class="row-label">Include weekends</span>
           <input type="checkbox" id="include-weekends" role="switch" />
         </div>
-        <div class="settings-row">
-          <span class="row-label">Copy format</span>
-          <select id="copy-format">
-            <option value="decimal">Decimal (7.5)</option>
-            <option value="hms">HH:MM (7:30)</option>
-          </select>
-        </div>
       </div>
       <div class="settings-section">
         <h3>Data</h3>
@@ -545,7 +530,6 @@
       return {
         theme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
         includeWeekends: false,
-        copyFormat: 'hms',
         weekdayStart: 'mon',
         weekStart: toDateStr(getWeekStartDate('mon')),
         weekLocked: false,
@@ -678,10 +662,6 @@
     }
 
     function formatMins(mins) {
-      if (mins === 0) return state.copyFormat === 'decimal' ? '0' : '0:00';
-      if (state.copyFormat === 'decimal') {
-        return parseFloat((mins / 60).toFixed(2)).toString();
-      }
       const h = Math.floor(mins / 60);
       const m = mins % 60;
       return `${h}:${String(m).padStart(2, '0')}`;
@@ -739,6 +719,14 @@
       return DAYS.some(d => state.days[d].some(b => b.start || b.end));
     }
 
+    function dayOffset(dayKey) {
+      const startDow = DAY_DOW[state.weekdayStart];
+      const keyDow = DAY_DOW[dayKey];
+      let offset = keyDow - startDow;
+      if (offset < 0) offset += 7;
+      return offset;
+    }
+
     // ─── Week navigation ──────────────────────────────────────────────────────
     function shiftWeek(delta) {
       const monday = parseWeekStart();
@@ -779,7 +767,7 @@
         if (validBlocks.length === 0 && !note) return;
 
         const dayDate = new Date(monday);
-        dayDate.setDate(monday.getDate() + dayIndex);
+        dayDate.setDate(monday.getDate() + dayOffset(dayKey));
         const dateStr = dayDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 
         const dayHeader = note
@@ -836,20 +824,18 @@
         const nameGroup = document.createElement('div');
         nameGroup.className = 'day-name-group';
         const dayDate = new Date(monday);
-        dayDate.setDate(monday.getDate() + dayIndex);
+        dayDate.setDate(monday.getDate() + dayOffset(dayKey));
         const dateStr = dayDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
         const isToday = toDateStr(dayDate) === toDateStr(new Date());
         nameGroup.innerHTML = `<span class="day-label">${DAY_LABELS[dayKey]}</span><span class="day-date">${dateStr}</span>${isToday ? '<span class="today-badge">Today</span>' : ''}`;
 
         const dayInvalid = dayHasInvalid(blocks, overlapping);
-        const totalBtn = document.createElement('button');
-        totalBtn.className = `day-total ${hasHours ? 'has-hours' : 'zero'}${dayInvalid ? ' invalid' : ''}`;
-        totalBtn.title = 'Copy to clipboard';
-        totalBtn.innerHTML = `${escHtml(totalText)} ${SVG_COPY}`;
-        totalBtn.addEventListener('click', () => copyText(totalText));
+        const totalDisplay = document.createElement('div');
+        totalDisplay.className = `day-total ${hasHours ? 'has-hours' : 'zero'}${dayInvalid ? ' invalid' : ''}`;
+        totalDisplay.textContent = totalText;
 
         header.appendChild(nameGroup);
-        header.appendChild(totalBtn);
+        header.appendChild(totalDisplay);
         article.appendChild(header);
 
         // Block rows
@@ -1002,7 +988,6 @@
     function applySettings() {
       document.getElementById('weekday-start').value = state.weekdayStart;
       document.getElementById('include-weekends').checked = state.includeWeekends;
-      document.getElementById('copy-format').value = state.copyFormat;
     }
 
     document.getElementById('weekday-start').addEventListener('change', (e) => {
@@ -1015,12 +1000,6 @@
 
     document.getElementById('include-weekends').addEventListener('change', (e) => {
       state.includeWeekends = e.target.checked;
-      saveState();
-      renderDays();
-    });
-
-    document.getElementById('copy-format').addEventListener('change', (e) => {
-      state.copyFormat = e.target.value;
       saveState();
       renderDays();
     });
