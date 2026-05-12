@@ -1,9 +1,19 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Timesheet</title>
+  <script>
+    // Apply theme before stylesheet to avoid flash
+    (function () {
+      try {
+        const s = JSON.parse(localStorage.getItem('timesheet.v1') || '{}');
+        const theme = s.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (_) {}
+    })();
+  </script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
   <style>
     body {
@@ -275,6 +285,18 @@
       opacity: 0.7;
       flex-shrink: 0;
     }
+
+    .day-total.invalid,
+    .day-total.invalid.zero {
+      background: var(--pico-del-color, #c0392b);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .week-total-btn.invalid {
+      background: var(--pico-del-color, #c0392b);
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -387,11 +409,16 @@
         if (raw) {
           const parsed = JSON.parse(raw);
           state = { ...defaultState(), ...parsed };
-          // Ensure all days exist with at least one block
+          // Ensure all days exist with valid block structure
           for (const d of DAYS) {
-            if (!Array.isArray(state.days[d]) || !state.days[d].length) {
-              state.days[d] = [{ start: '', end: '' }];
-            }
+            const day = state.days[d];
+            const clean = Array.isArray(day)
+              ? day.filter(b => b && typeof b === 'object').map(b => ({
+                  start: typeof b.start === 'string' ? b.start : '',
+                  end: typeof b.end === 'string' ? b.end : '',
+                }))
+              : [];
+            state.days[d] = clean.length ? clean : [{ start: '', end: '' }];
           }
           return;
         }
@@ -431,8 +458,40 @@
       return e - s;
     }
 
-    function dayTotalMins(dayKey) {
-      return state.days[dayKey].reduce((sum, b) => sum + (blockMins(b) ?? 0), 0);
+    // Returns Set of block indices involved in any overlap within a day.
+    function overlappingIndices(blocks) {
+      const valid = blocks.map((b, i) => {
+        const s = parseMins(b.start);
+        const e = parseMins(b.end);
+        return (s !== null && e !== null && e > s) ? { s, e, i } : null;
+      }).filter(Boolean);
+
+      const bad = new Set();
+      for (let a = 0; a < valid.length; a++) {
+        for (let b = a + 1; b < valid.length; b++) {
+          if (valid[a].s < valid[b].e && valid[b].s < valid[a].e) {
+            bad.add(valid[a].i);
+            bad.add(valid[b].i);
+          }
+        }
+      }
+      return bad;
+    }
+
+    function dayHasInvalid(blocks, overlapping) {
+      if (overlapping.size > 0) return true;
+      return blocks.some(b => {
+        const s = parseMins(b.start);
+        const e = parseMins(b.end);
+        return s !== null && e !== null && e <= s;
+      });
+    }
+
+    function dayTotalMins(blocks, overlapping) {
+      return blocks.reduce((sum, b, i) => {
+        if (overlapping.has(i)) return sum;
+        return sum + (blockMins(b) ?? 0);
+      }, 0);
     }
 
     function activeDays() {
@@ -440,7 +499,10 @@
     }
 
     function weekTotalMins() {
-      return activeDays().reduce((sum, d) => sum + dayTotalMins(d), 0);
+      return activeDays().reduce((sum, d) => {
+        const blocks = state.days[d];
+        return sum + dayTotalMins(blocks, overlappingIndices(blocks));
+      }, 0);
     }
 
     function formatMins(mins) {
@@ -490,21 +552,16 @@
       return mon;
     }
 
-    function getDayDate(dayIndex) {
-      const mon = getMondayOfCurrentWeek();
-      const d = new Date(mon);
-      d.setDate(mon.getDate() + dayIndex);
-      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-    }
-
     // ─── Render ───────────────────────────────────────────────────────────────
     function renderDays() {
       const container = document.getElementById('days-container');
       container.innerHTML = '';
+      const monday = getMondayOfCurrentWeek();
 
       activeDays().forEach((dayKey, dayIndex) => {
         const blocks = state.days[dayKey];
-        const totalMins = dayTotalMins(dayKey);
+        const overlapping = overlappingIndices(blocks);
+        const totalMins = dayTotalMins(blocks, overlapping);
         const totalText = formatMins(totalMins);
         const hasHours = totalMins > 0;
 
@@ -517,10 +574,14 @@
 
         const nameGroup = document.createElement('div');
         nameGroup.className = 'day-name-group';
-        nameGroup.innerHTML = `<span class="day-label">${DAY_LABELS[dayKey]}</span><span class="day-date">${getDayDate(dayIndex)}</span>`;
+        const dayDate = new Date(monday);
+        dayDate.setDate(monday.getDate() + dayIndex);
+        const dateStr = dayDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        nameGroup.innerHTML = `<span class="day-label">${DAY_LABELS[dayKey]}</span><span class="day-date">${dateStr}</span>`;
 
+        const dayInvalid = dayHasInvalid(blocks, overlapping);
         const totalBtn = document.createElement('button');
-        totalBtn.className = `day-total ${hasHours ? 'has-hours' : 'zero'}`;
+        totalBtn.className = `day-total ${hasHours ? 'has-hours' : 'zero'}${dayInvalid ? ' invalid' : ''}`;
         totalBtn.title = 'Copy to clipboard';
         totalBtn.innerHTML = `${escHtml(totalText)} ${SVG_COPY}`;
         totalBtn.addEventListener('click', () => copyText(totalText));
@@ -531,9 +592,10 @@
 
         // Block rows
         blocks.forEach((block, blockIdx) => {
-          const invalid = block.start && block.end &&
+          const withinBlockInvalid = block.start && block.end &&
             parseMins(block.end) !== null && parseMins(block.start) !== null &&
             parseMins(block.end) <= parseMins(block.start);
+          const invalid = withinBlockInvalid || overlapping.has(blockIdx);
 
           const row = document.createElement('div');
           row.className = 'block-row';
@@ -602,6 +664,11 @@
       // Update week total
       const mins = weekTotalMins();
       document.getElementById('week-total-display').textContent = formatMins(mins);
+      const weekInvalid = activeDays().some(d => {
+        const b = state.days[d];
+        return dayHasInvalid(b, overlappingIndices(b));
+      });
+      document.getElementById('week-total-btn').classList.toggle('invalid', weekInvalid);
     }
 
     function escHtml(s) {
