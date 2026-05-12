@@ -455,6 +455,18 @@
       <div class="settings-section">
         <h3>Options</h3>
         <div class="settings-row">
+          <span class="row-label">Week starts on</span>
+          <select id="weekday-start">
+            <option value="mon">Monday</option>
+            <option value="tue">Tuesday</option>
+            <option value="wed">Wednesday</option>
+            <option value="thu">Thursday</option>
+            <option value="fri">Friday</option>
+            <option value="sat">Saturday</option>
+            <option value="sun">Sunday</option>
+          </select>
+        </div>
+        <div class="settings-row">
           <span class="row-label">Include weekends</span>
           <input type="checkbox" id="include-weekends" role="switch" />
         </div>
@@ -511,6 +523,7 @@
       mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday',
       thu: 'Thursday', fri: 'Friday', sat: 'Saturday', sun: 'Sunday',
     };
+    const DAY_DOW = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
 
     const SVG_COPY = `<svg class="copy-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
     const SVG_PLUS = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
@@ -533,7 +546,8 @@
         theme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
         includeWeekends: false,
         copyFormat: 'hms',
-        weekStart: toDateStr(getMondayOfCurrentWeek()),
+        weekdayStart: 'mon',
+        weekStart: toDateStr(getWeekStartDate('mon')),
         weekLocked: false,
         days: defaultDays(),
         notes: defaultNotes(),
@@ -567,11 +581,14 @@
             if (typeof state.notes[d] !== 'string') state.notes[d] = '';
           }
 
+          if (!DAYS.includes(state.weekdayStart)) {
+            state.weekdayStart = 'mon';
+          }
           if (!state.weekStart) {
-            state.weekStart = toDateStr(getMondayOfCurrentWeek());
+            state.weekStart = toDateStr(getWeekStartDate(state.weekdayStart));
           }
           if (!state.weekLocked && !hasAnyEntries()) {
-            state.weekStart = toDateStr(getMondayOfCurrentWeek());
+            state.weekStart = toDateStr(getWeekStartDate(state.weekdayStart));
           }
           saveState();
           return;
@@ -648,7 +665,9 @@
     }
 
     function activeDays() {
-      return state.includeWeekends ? DAYS : DAYS.slice(0, 5);
+      const startIdx = DAYS.indexOf(state.weekdayStart);
+      const ordered = [...DAYS.slice(startIdx), ...DAYS.slice(0, startIdx)];
+      return state.includeWeekends ? ordered : ordered.filter(d => d !== 'sat' && d !== 'sun');
     }
 
     function weekTotalMins() {
@@ -694,13 +713,14 @@
     }
 
     // ─── Week date helpers ────────────────────────────────────────────────────
-    function getMondayOfCurrentWeek() {
+    function getWeekStartDate(startDay) {
       const today = new Date();
-      const dow = today.getDay(); // 0=Sun
-      const offset = dow === 0 ? -6 : 1 - dow;
-      const mon = new Date(today);
-      mon.setDate(today.getDate() + offset);
-      return mon;
+      const startDow = DAY_DOW[startDay];
+      let offset = today.getDay() - startDow;
+      if (offset < 0) offset += 7;
+      const start = new Date(today);
+      start.setDate(today.getDate() - offset);
+      return start;
     }
 
     function toDateStr(date) {
@@ -712,7 +732,7 @@
         const [y, m, d] = state.weekStart.split('-').map(Number);
         return new Date(y, m - 1, d);
       }
-      return getMondayOfCurrentWeek();
+      return getWeekStartDate(state.weekdayStart);
     }
 
     function hasAnyEntries() {
@@ -733,7 +753,7 @@
     document.getElementById('week-prev').addEventListener('click', () => shiftWeek(-1));
 
     document.getElementById('week-next').addEventListener('click', () => {
-      if (toDateStr(parseWeekStart()) >= toDateStr(getMondayOfCurrentWeek())) return;
+      if (toDateStr(parseWeekStart()) >= toDateStr(getWeekStartDate(state.weekdayStart))) return;
       shiftWeek(1);
     });
 
@@ -796,7 +816,7 @@
       sunday.setDate(monday.getDate() + 6);
       document.getElementById('week-nav-label').textContent =
         `${monday.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${sunday.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
-      const atCurrentWeek = toDateStr(monday) >= toDateStr(getMondayOfCurrentWeek());
+      const atCurrentWeek = toDateStr(monday) >= toDateStr(getWeekStartDate(state.weekdayStart));
       document.getElementById('week-next').disabled = atCurrentWeek;
 
       activeDays().forEach((dayKey, dayIndex) => {
@@ -980,9 +1000,18 @@
     });
 
     function applySettings() {
+      document.getElementById('weekday-start').value = state.weekdayStart;
       document.getElementById('include-weekends').checked = state.includeWeekends;
       document.getElementById('copy-format').value = state.copyFormat;
     }
+
+    document.getElementById('weekday-start').addEventListener('change', (e) => {
+      state.weekdayStart = e.target.value;
+      state.weekLocked = false;
+      state.weekStart = toDateStr(getWeekStartDate(state.weekdayStart));
+      saveState();
+      renderDays();
+    });
 
     document.getElementById('include-weekends').addEventListener('change', (e) => {
       state.includeWeekends = e.target.checked;
@@ -1001,7 +1030,7 @@
       state.days = defaultDays();
       state.notes = defaultNotes();
       state.weekLocked = false;
-      state.weekStart = toDateStr(getMondayOfCurrentWeek());
+      state.weekStart = toDateStr(getWeekStartDate(state.weekdayStart));
       saveState();
       editingNoteDay = null;
       settingsOpen = false;
