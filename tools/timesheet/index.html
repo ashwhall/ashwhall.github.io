@@ -62,6 +62,31 @@
       background: var(--pico-secondary-background);
     }
 
+    .icon-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    .icon-btn:disabled:hover {
+      background: none;
+    }
+
+    /* Week navigation */
+    .week-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      gap: 0.5rem;
+    }
+
+    .week-nav-label {
+      font-size: 0.875rem;
+      color: var(--pico-muted-color);
+      text-align: center;
+      flex: 1;
+    }
+
     /* Settings panel */
     .settings-panel {
       margin-bottom: 1.25rem;
@@ -180,6 +205,13 @@
       border: 1px solid var(--pico-muted-border-color);
     }
 
+    .day-total.invalid,
+    .day-total.invalid.zero {
+      background: var(--pico-del-color, #c0392b);
+      color: #fff;
+      border-color: transparent;
+    }
+
     /* Block rows */
     .block-row {
       display: grid;
@@ -221,6 +253,52 @@
       box-shadow: none;
     }
 
+    /* Daily notes */
+    .day-note-wrap {
+      margin-top: 0.625rem;
+    }
+
+    .day-note {
+      font-size: 0.8125rem;
+      color: var(--pico-muted-color);
+      cursor: pointer;
+      padding: 0.375rem 0.5rem;
+      border-radius: var(--pico-border-radius);
+      min-height: 2rem;
+      display: flex;
+      align-items: center;
+      border: 1px solid transparent;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.5;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .day-note:hover {
+      border-color: var(--pico-muted-border-color);
+      background: var(--pico-card-background-color);
+    }
+
+    .day-note.day-note-empty {
+      font-style: italic;
+      opacity: 0.5;
+    }
+
+    .day-note-editor {
+      width: 100%;
+      margin: 0;
+      font-size: 0.8125rem;
+      resize: vertical;
+      min-height: 4rem;
+    }
+
+    .note-ok-btn {
+      margin-top: 0.375rem;
+      padding: 0.25rem 0.875rem;
+      font-size: 0.8125rem;
+      box-shadow: none;
+    }
+
     /* Week footer */
     .week-footer {
       position: fixed;
@@ -233,7 +311,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem;
+      gap: 0.75rem;
       z-index: 10;
     }
 
@@ -241,6 +319,24 @@
       font-size: 0.875rem;
       color: var(--pico-muted-color);
       margin: 0;
+      white-space: nowrap;
+    }
+
+    .footer-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .summary-btn {
+      margin: 0;
+      padding: 0.375rem 0.875rem;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      box-shadow: none;
+      white-space: nowrap;
     }
 
     .week-total-btn {
@@ -262,6 +358,11 @@
 
     .week-total-btn:hover {
       opacity: 0.82;
+    }
+
+    .week-total-btn.invalid {
+      background: var(--pico-del-color, #c0392b);
+      color: #fff;
     }
 
     /* Toast */
@@ -290,18 +391,6 @@
     .copy-icon {
       opacity: 0.7;
       flex-shrink: 0;
-    }
-
-    .day-total.invalid,
-    .day-total.invalid.zero {
-      background: var(--pico-del-color, #c0392b);
-      color: #fff;
-      border-color: transparent;
-    }
-
-    .week-total-btn.invalid {
-      background: var(--pico-del-color, #c0392b);
-      color: #fff;
     }
   </style>
 </head>
@@ -335,6 +424,21 @@
       </div>
     </header>
 
+    <!-- Week navigation -->
+    <div class="week-nav">
+      <button class="icon-btn" id="week-prev" aria-label="Previous week" title="Previous week">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <span class="week-nav-label" id="week-nav-label"></span>
+      <button class="icon-btn" id="week-next" aria-label="Next week" title="Next week">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+
     <!-- Settings panel -->
     <div class="settings-panel" id="settings-panel" hidden>
       <div class="settings-section">
@@ -367,13 +471,22 @@
   <!-- Week total footer -->
   <div class="week-footer">
     <span class="week-footer-label">Week total</span>
-    <button class="week-total-btn" id="week-total-btn" title="Copy to clipboard">
-      <span id="week-total-display">0:00</span>
-      <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-      </svg>
-    </button>
+    <div class="footer-actions">
+      <button class="secondary outline summary-btn" id="summary-btn" title="Copy detailed summary">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+          <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+        Summary
+      </button>
+      <button class="week-total-btn" id="week-total-btn" title="Copy to clipboard">
+        <span id="week-total-display">0:00</span>
+        <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <!-- Toast -->
@@ -388,16 +501,20 @@
       thu: 'Thursday', fri: 'Friday', sat: 'Saturday', sun: 'Sunday',
     };
 
-    // SVG snippets
     const SVG_COPY = `<svg class="copy-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
     const SVG_PLUS = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
     const SVG_X = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 
     // ─── State ────────────────────────────────────────────────────────────────
     let state;
+    let editingNoteDay = null;
 
     function defaultDays() {
       return DAYS.reduce((acc, d) => ({ ...acc, [d]: [{ start: '', end: '' }] }), {});
+    }
+
+    function defaultNotes() {
+      return DAYS.reduce((acc, d) => ({ ...acc, [d]: '' }), {});
     }
 
     function defaultState() {
@@ -406,7 +523,9 @@
         includeWeekends: false,
         copyFormat: 'hms',
         weekStart: toDateStr(getMondayOfCurrentWeek()),
+        weekLocked: false,
         days: defaultDays(),
+        notes: defaultNotes(),
       };
     }
 
@@ -416,7 +535,8 @@
         if (raw) {
           const parsed = JSON.parse(raw);
           state = { ...defaultState(), ...parsed };
-          // Ensure all days exist with valid block structure
+
+          // Sanitize days
           for (const d of DAYS) {
             const day = state.days[d];
             const clean = Array.isArray(day)
@@ -427,10 +547,19 @@
               : [];
             state.days[d] = clean.length ? clean : [{ start: '', end: '' }];
           }
+
+          // Sanitize notes
+          if (!state.notes || typeof state.notes !== 'object') {
+            state.notes = defaultNotes();
+          }
+          for (const d of DAYS) {
+            if (typeof state.notes[d] !== 'string') state.notes[d] = '';
+          }
+
           if (!state.weekStart) {
             state.weekStart = toDateStr(getMondayOfCurrentWeek());
           }
-          if (!hasAnyEntries()) {
+          if (!state.weekLocked && !hasAnyEntries()) {
             state.weekStart = toDateStr(getMondayOfCurrentWeek());
           }
           saveState();
@@ -472,7 +601,6 @@
       return e - s;
     }
 
-    // Returns Set of block indices involved in any overlap within a day.
     function overlappingIndices(blocks) {
       const valid = blocks.map((b, i) => {
         const s = parseMins(b.start);
@@ -522,9 +650,7 @@
     function formatMins(mins) {
       if (mins === 0) return state.copyFormat === 'decimal' ? '0' : '0:00';
       if (state.copyFormat === 'decimal') {
-        const val = mins / 60;
-        // Up to 2 decimal places, strip trailing zeros
-        return parseFloat(val.toFixed(2)).toString();
+        return parseFloat((mins / 60).toFixed(2)).toString();
       }
       const h = Math.floor(mins / 60);
       const m = mins % 60;
@@ -582,11 +708,73 @@
       return DAYS.some(d => state.days[d].some(b => b.start || b.end));
     }
 
+    // ─── Week navigation ──────────────────────────────────────────────────────
+    function shiftWeek(delta) {
+      const monday = parseWeekStart();
+      monday.setDate(monday.getDate() + delta * 7);
+      state.weekStart = toDateStr(monday);
+      state.weekLocked = true;
+      editingNoteDay = null;
+      saveState();
+      renderDays();
+    }
+
+    document.getElementById('week-prev').addEventListener('click', () => shiftWeek(-1));
+
+    document.getElementById('week-next').addEventListener('click', () => {
+      if (toDateStr(parseWeekStart()) >= toDateStr(getMondayOfCurrentWeek())) return;
+      shiftWeek(1);
+    });
+
+    // ─── Summary copy ─────────────────────────────────────────────────────────
+    function buildSummary() {
+      const monday = parseWeekStart();
+      const lines = [];
+
+      activeDays().forEach((dayKey, dayIndex) => {
+        const blocks = state.days[dayKey];
+        const overlapping = overlappingIndices(blocks);
+        const totalMins = dayTotalMins(blocks, overlapping);
+
+        const dayDate = new Date(monday);
+        dayDate.setDate(monday.getDate() + dayIndex);
+        const dateStr = dayDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+
+        const validBlocks = blocks.filter((b, i) => !overlapping.has(i) && blockMins(b) !== null);
+        const timeRanges = validBlocks.length > 0
+          ? validBlocks.map(b => `${b.start}–${b.end}`).join(', ')
+          : '—';
+
+        const totalPart = totalMins > 0 ? ` — ${formatMins(totalMins)}` : '';
+        lines.push(`• ${DAY_LABELS[dayKey]} (${dateStr}): ${timeRanges}${totalPart}`);
+
+        const note = (state.notes[dayKey] || '').trim();
+        if (note) lines.push(`  Note: ${note}`);
+      });
+
+      lines.push('');
+      lines.push(`Week total: ${formatMins(weekTotalMins())}`);
+
+      return lines.join('\n');
+    }
+
+    document.getElementById('summary-btn').addEventListener('click', () => {
+      copyText(buildSummary());
+    });
+
     // ─── Render ───────────────────────────────────────────────────────────────
     function renderDays() {
       const container = document.getElementById('days-container');
       container.innerHTML = '';
       const monday = parseWeekStart();
+
+      // Update week nav
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      document.getElementById('week-nav-label').textContent =
+        `${monday.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${sunday.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
+      const atCurrentWeek = toDateStr(monday) >= toDateStr(getMondayOfCurrentWeek());
+      document.getElementById('week-next').disabled = atCurrentWeek;
 
       activeDays().forEach((dayKey, dayIndex) => {
         const blocks = state.days[dayKey];
@@ -679,7 +867,6 @@
           state.days[dayKey].push({ start: '', end: '' });
           saveState();
           renderDays();
-          // Focus the new block's start input
           setTimeout(() => {
             const rows = document.querySelectorAll(`#days-container .day-card:nth-child(${dayIndex + 1}) .block-row`);
             const lastRow = rows[rows.length - 1];
@@ -688,6 +875,51 @@
         });
         article.appendChild(addBtn);
 
+        // Notes
+        const noteWrap = document.createElement('div');
+        noteWrap.className = 'day-note-wrap';
+
+        if (editingNoteDay === dayKey) {
+          const textarea = document.createElement('textarea');
+          textarea.className = 'day-note-editor';
+          textarea.value = state.notes[dayKey] || '';
+          textarea.placeholder = 'Add a note for this day…';
+          textarea.rows = 3;
+
+          const commitNote = () => {
+            state.notes[dayKey] = textarea.value;
+            editingNoteDay = null;
+            saveState();
+            renderDays();
+          };
+
+          textarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') commitNote();
+          });
+
+          const okBtn = document.createElement('button');
+          okBtn.className = 'secondary outline note-ok-btn';
+          okBtn.textContent = 'OK';
+          okBtn.addEventListener('click', commitNote);
+
+          noteWrap.appendChild(textarea);
+          noteWrap.appendChild(okBtn);
+          setTimeout(() => textarea.focus(), 0);
+        } else {
+          const noteDisplay = document.createElement('div');
+          const noteText = state.notes[dayKey] || '';
+          noteDisplay.className = `day-note${noteText ? '' : ' day-note-empty'}`;
+          noteDisplay.textContent = noteText || 'Add note…';
+          noteDisplay.setAttribute('role', 'button');
+          noteDisplay.setAttribute('aria-label', `${DAY_LABELS[dayKey]} note`);
+          noteDisplay.addEventListener('click', () => {
+            editingNoteDay = dayKey;
+            renderDays();
+          });
+          noteWrap.appendChild(noteDisplay);
+        }
+
+        article.appendChild(noteWrap);
         container.appendChild(article);
       });
 
@@ -736,8 +968,11 @@
     document.getElementById('reset-btn').addEventListener('click', () => {
       if (!confirm('Clear all entries and start a new week?')) return;
       state.days = defaultDays();
+      state.notes = defaultNotes();
+      state.weekLocked = false;
       state.weekStart = toDateStr(getMondayOfCurrentWeek());
       saveState();
+      editingNoteDay = null;
       settingsOpen = false;
       document.getElementById('settings-panel').hidden = true;
       renderDays();
