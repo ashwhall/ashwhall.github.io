@@ -173,6 +173,17 @@
       color: var(--pico-muted-color);
     }
 
+    .today-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--pico-primary);
+      background: color-mix(in srgb, var(--pico-primary) 12%, transparent);
+      padding: 0.1rem 0.45rem;
+      border-radius: 2rem;
+    }
+
     .day-total {
       cursor: pointer;
       padding: 0.25rem 0.75rem;
@@ -807,7 +818,8 @@
         const dayDate = new Date(monday);
         dayDate.setDate(monday.getDate() + dayIndex);
         const dateStr = dayDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-        nameGroup.innerHTML = `<span class="day-label">${DAY_LABELS[dayKey]}</span><span class="day-date">${dateStr}</span>`;
+        const isToday = toDateStr(dayDate) === toDateStr(new Date());
+        nameGroup.innerHTML = `<span class="day-label">${DAY_LABELS[dayKey]}</span><span class="day-date">${dateStr}</span>${isToday ? '<span class="today-badge">Today</span>' : ''}`;
 
         const dayInvalid = dayHasInvalid(blocks, overlapping);
         const totalBtn = document.createElement('button');
