@@ -260,7 +260,7 @@
 
     .day-note {
       font-size: 0.8125rem;
-      color: var(--pico-muted-color);
+      color: var(--pico-color);
       cursor: pointer;
       padding: 0.375rem 0.5rem;
       border-radius: var(--pico-border-radius);
@@ -727,33 +727,45 @@
     });
 
     // ─── Summary copy ─────────────────────────────────────────────────────────
+    function formatDuration(mins) {
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      if (h > 0 && m > 0) return `${h}h ${m}m`;
+      if (h > 0) return `${h}h`;
+      return `${m}m`;
+    }
+
     function buildSummary() {
       const monday = parseWeekStart();
       const lines = [];
+      let firstDay = true;
 
       activeDays().forEach((dayKey, dayIndex) => {
         const blocks = state.days[dayKey];
         const overlapping = overlappingIndices(blocks);
-        const totalMins = dayTotalMins(blocks, overlapping);
+        const validBlocks = blocks.filter((b, i) => !overlapping.has(i) && blockMins(b) !== null);
+        const note = (state.notes[dayKey] || '').trim();
+        if (validBlocks.length === 0 && !note) return;
 
         const dayDate = new Date(monday);
         dayDate.setDate(monday.getDate() + dayIndex);
         const dateStr = dayDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 
-        const validBlocks = blocks.filter((b, i) => !overlapping.has(i) && blockMins(b) !== null);
-        const timeRanges = validBlocks.length > 0
-          ? validBlocks.map(b => `${b.start}–${b.end}`).join(', ')
-          : '—';
+        const dayHeader = note
+          ? `${DAY_LABELS[dayKey]} (${dateStr}) - ${note}`
+          : `${DAY_LABELS[dayKey]} (${dateStr})`;
 
-        const totalPart = totalMins > 0 ? ` — ${formatMins(totalMins)}` : '';
-        lines.push(`• ${DAY_LABELS[dayKey]} (${dateStr}): ${timeRanges}${totalPart}`);
+        if (!firstDay) lines.push('');
+        firstDay = false;
 
-        const note = (state.notes[dayKey] || '').trim();
-        if (note) lines.push(`  Note: ${note}`);
+        lines.push(dayHeader);
+        for (const b of validBlocks) {
+          lines.push(`${b.start} - ${b.end} (${formatDuration(blockMins(b))})`);
+        }
       });
 
       lines.push('');
-      lines.push(`Week total: ${formatMins(weekTotalMins())}`);
+      lines.push(`WEEK TOTAL: ${formatDuration(weekTotalMins())}`);
 
       return lines.join('\n');
     }
