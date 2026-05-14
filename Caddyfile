@@ -1,0 +1,14 @@
+# Local HTTPS for LAN phone testing.
+# Replace 192.168.1.10 with your host's LAN IP (or set HOST_IP env and edit accordingly).
+# nip.io resolves <ip>.nip.io -> <ip> with no DNS setup.
+# tls internal makes Caddy generate a local CA + cert; install /data/caddy/pki/authorities/local/root.crt
+# on the phone once to trust it.
+
+{
+  local_certs
+}
+
+192.168.50.105.nip.io, localhost {
+  tls internal
+  reverse_proxy jekyll:4000
+}

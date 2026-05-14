@@ -1,0 +1,30 @@
+services:
+  jekyll:
+    image: jekyll/jekyll:4
+    restart: unless-stopped
+    command: jekyll serve --host 0.0.0.0 --config _config.yml,_config.dev.yml --force_polling --watch
+    expose:
+      - "4000"
+    ports:
+      - "4000:4000"
+    volumes:
+      - .:/srv/jekyll
+      - bundle_cache:/usr/local/bundle
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - jekyll
+
+volumes:
+  bundle_cache:
+  caddy_data:
+  caddy_config:

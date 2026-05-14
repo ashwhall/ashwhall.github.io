@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fingerflip</title>
+  <link rel="shortcut icon" href="/public/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/public/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/public/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/public/favicon-192x192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/public/favicon-512x512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/public/apple-touch-icon.png" />
+  <script>
+    (function () {
+      try {
+        const s = JSON.parse(localStorage.getItem('fingerflip.v1') || '{}');
+        const theme = s.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (_) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+  <link rel="stylesheet" href="./app.css?v=26" />
+</head>
+<body>
+  <main class="container">
+    <div id="desktop-banner" class="desktop-banner" hidden>
+      <strong>Mobile only.</strong> Fingerflip uses your phone's motion sensors. Open this page on your phone over HTTPS to use it.
+    </div>
+    <header>
+      <h1>Fingerflip</h1>
+      <div class="header-actions">
+        <label class="learn-toggle" title="Learn mode">
+          <input type="checkbox" id="learn-toggle" />
+          <span>Learn</span>
+        </label>
+        <button class="icon-btn" id="export-btn" title="Export tricks.json" aria-label="Export">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+        <button class="icon-btn" id="settings-btn" title="Settings" aria-label="Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <section id="settings-panel" class="settings-panel" hidden>
+      <div class="settings-section">
+        <label>
+          Launch threshold (°/s)
+          <input type="number" id="threshold-input" min="1" max="500" step="1" />
+        </label>
+        <label>
+          Settle threshold (°/s)
+          <input type="number" id="settle-threshold-input" min="1" max="500" step="1" />
+        </label>
+        <label>
+          Settle frames
+          <input type="number" id="settle-frames-input" min="1" max="120" step="1" />
+        </label>
+        <label>
+          Pre-roll frames
+          <input type="number" id="preroll-input" min="0" max="60" step="1" />
+        </label>
+        <label>
+          Max record (ms)
+          <input type="number" id="max-record-input" min="200" max="10000" step="100" />
+        </label>
+        <label>
+          Accel threshold (m/s² — two-stage launch)
+          <input type="number" id="accel-threshold-input" min="0" max="100" step="0.5" />
+        </label>
+        <label class="inline-check">
+          <input type="checkbox" id="use-rotation-input" />
+          Use total rotation distance (μ)
+        </label>
+        <label>
+          Rotation weight μ (deg penalty)
+          <input type="number" id="rotation-weight-input" min="0" max="10" step="0.001" />
+        </label>
+        <label>
+          Ambiguous margin (top1/top2)
+          <input type="number" id="ambiguous-margin-input" min="0" max="1" step="0.01" />
+        </label>
+        <label>
+          Bailed tolerance (deg, max Δβ/Δγ)
+          <input type="number" id="bailed-tolerance-input" min="0" max="180" step="1" />
+        </label>
+        <label class="inline-check">
+          <input type="checkbox" id="use-orientation-landing-input" />
+          End on screen-up landing
+        </label>
+        <label>
+          Screen-up threshold (cos β·cos γ, -1..1)
+          <input type="number" id="screen-up-threshold-input" min="-1" max="1" step="0.05" />
+        </label>
+        <label class="inline-check">
+          <input type="checkbox" id="visualise-input" />
+          Visualise captures
+        </label>
+        <label class="inline-check">
+          <input type="checkbox" id="infer-difficulty-input" />
+          Inferred difficulty (#16)
+        </label>
+        <p class="muted small" id="sample-rate-readout">Sample rate: — Hz</p>
+        <button class="secondary" id="clear-unsaved-btn">Clear unsaved samples</button>
+        <button class="secondary" id="reset-local-btn">Reset local state (settings + unsaved)</button>
+      </div>
+    </section>
+
+    <section class="status-bar">
+      <div class="status-pill" id="status-pill">IDLE</div>
+      <div class="trigger-bar" id="trigger-bar" aria-label="Trigger progress">
+        <div class="trigger-fill" id="trigger-fill"></div>
+      </div>
+    </section>
+
+    <section class="action-section">
+      <button class="big-btn" id="primary-btn">Start</button>
+      <p class="muted small" id="hint">Tap Start to arm motion capture. Flip the phone to record.</p>
+    </section>
+
+    <section id="result-actions-top" hidden>
+      <button class="big-btn" id="result-done-top-btn">Done</button>
+    </section>
+
+    <section id="viz-section" hidden>
+      <canvas id="viz-canvas" width="600" height="240"></canvas>
+      <p class="viz-legend" id="viz-legend"></p>
+    </section>
+
+    <section id="label-screen" hidden>
+      <h2>Label this flip</h2>
+      <p id="label-bailed-hint" class="bailed-hint" hidden></p>
+      <div class="trick-buttons" id="trick-buttons"></div>
+      <form id="new-trick-form" class="new-trick-form">
+        <label>
+          New trick name
+          <input type="text" id="new-trick-name" placeholder="e.g. kickflip" autocomplete="off" />
+        </label>
+        <label>
+          Difficulty (1–10)
+          <input type="number" id="new-trick-difficulty" min="1" max="10" step="1" value="3" />
+        </label>
+        <button type="submit">Save as new trick</button>
+      </form>
+      <button class="secondary" id="discard-btn">Discard</button>
+    </section>
+
+    <section id="result-screen" hidden>
+      <h2 id="result-title">—</h2>
+      <p id="result-subtitle" class="muted"></p>
+      <table class="result-table">
+        <thead>
+          <tr><th>Trick</th><th>Total</th><th>Shape</th><th>Rot α/β/γ</th></tr>
+        </thead>
+        <tbody id="result-rows"></tbody>
+      </table>
+    </section>
+
+    <footer class="stats-footer">
+      <span id="stats-tricks">0 tricks</span> ·
+      <span id="stats-samples">0 samples</span> ·
+      <span id="stats-unsaved">0 unsaved</span>
+    </footer>
+  </main>
+
+  <script src="./app.js?v=26"></script>
+</body>
+</html>
