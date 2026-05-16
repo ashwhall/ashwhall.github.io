@@ -20,7 +20,7 @@
     })();
   </script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-  <link rel="stylesheet" href="./app.css?v=30" />
+  <link rel="stylesheet" href="./app.css?v=33" />
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 </head>
 <body>
@@ -51,16 +51,28 @@
     <section id="settings-panel" class="settings-panel" hidden>
       <div class="settings-section">
         <label>
-          Launch threshold (°/s)
-          <input type="number" id="threshold-input" min="1" max="500" step="1" />
+          Free-fall threshold (m/s² — launch when |accel| drops below)
+          <input type="number" id="freefall-low-input" min="0.1" max="9.8" step="0.1" />
         </label>
         <label>
-          Settle threshold (°/s)
-          <input type="number" id="settle-threshold-input" min="1" max="500" step="1" />
+          Free-fall frames (consecutive sub-threshold to confirm)
+          <input type="number" id="freefall-frames-input" min="1" max="30" step="1" />
         </label>
         <label>
-          Settle frames
-          <input type="number" id="settle-frames-input" min="1" max="120" step="1" />
+          Rotation launch (°/s — backup launch trigger if rotation builds first)
+          <input type="number" id="rotation-launch-input" min="50" max="3000" step="10" />
+        </label>
+        <label>
+          Catch drop fraction (|ω| below peak × this = caught)
+          <input type="number" id="catch-drop-frac-input" min="0.05" max="0.95" step="0.05" />
+        </label>
+        <label>
+          Catch drop frames (consecutive drop to confirm)
+          <input type="number" id="catch-drop-frames-input" min="1" max="30" step="1" />
+        </label>
+        <label>
+          Min airtime (ms — reject jiggles shorter than this)
+          <input type="number" id="min-airtime-input" min="0" max="2000" step="10" />
         </label>
         <label>
           Pre-roll frames
@@ -69,10 +81,6 @@
         <label>
           Max record (ms)
           <input type="number" id="max-record-input" min="200" max="10000" step="100" />
-        </label>
-        <label>
-          Accel threshold (m/s² — two-stage launch)
-          <input type="number" id="accel-threshold-input" min="0" max="100" step="0.5" />
         </label>
         <label class="inline-check">
           <input type="checkbox" id="use-rotation-input" />
@@ -89,14 +97,6 @@
         <label>
           Bailed tolerance (deg, max Δβ/Δγ)
           <input type="number" id="bailed-tolerance-input" min="0" max="180" step="1" />
-        </label>
-        <label class="inline-check">
-          <input type="checkbox" id="use-orientation-landing-input" />
-          End on screen-up landing
-        </label>
-        <label>
-          Screen-up threshold (cos β·cos γ, -1..1)
-          <input type="number" id="screen-up-threshold-input" min="-1" max="1" step="0.05" />
         </label>
         <label class="inline-check">
           <input type="checkbox" id="visualise-input" />
@@ -169,6 +169,6 @@
     </footer>
   </main>
 
-  <script src="./app.js?v=30"></script>
+  <script src="./app.js?v=33"></script>
 </body>
 </html>

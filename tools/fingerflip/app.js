@@ -5,23 +5,21 @@
   const DATASET_URL = './data/tricks.json';
 
   const DEFAULTS = {
-    threshold: 80,             // deg/s rotation launch trigger
-    settleThreshold: 30,       // deg/s settle bar — lower than launch for snappy end
-    accelThreshold: 12,        // m/s^2 accel trigger (two-stage launch)
-    settleFrames: 6,
+    freefallLow: 3,            // m/s² — |accel| below this = airborne (free fall)
+    freefallFrames: 2,         // consecutive sub-threshold frames to confirm launch
+    rotationLaunch: 400,       // °/s — launch trigger; also gates catch-by-drop
+    catchOmegaDropFrac: 0.35,  // |ω| drops below peak × this = caught (hand grip kills spin)
+    catchOmegaDropFrames: 2,   // consecutive drop frames to confirm catch
+    minAirtimeMs: 100,         // reject jiggles shorter than this
     prerollFrames: 20,
     maxRecordMs: 2000,
     resampleFrames: 64,
     rotationWeight: 0.05,
     useRotationDistance: true,
     visualise: true,
-    inferDifficulty: false,    // #16 derive difficulty from class metrics (flag)
-    ambiguousMargin: 0.15,     // #10 top1 vs top2 relative margin
-    bailedTolerance: 30,       // deg, max(|Δbeta|,|Δgamma|) — bailed detection always on
-    useOrientationLanding: true,
-    screenUpThreshold: 0.3,    // cos(β)·cos(γ) must exceed this — screen faces up
-    landedHoldFrames: 2,       // frames the landed pose must hold
-    minRecordMs: 150,          // earliest a landing can fire
+    inferDifficulty: false,
+    ambiguousMargin: 0.15,
+    bailedTolerance: 30,       // deg, max(|Δbeta|,|Δgamma|) — bail detection on stored orientation
   };
 
   const State = { IDLE: 'IDLE', ARMED: 'ARMED', RECORDING: 'RECORDING', LABELLING: 'LABELLING', CLASSIFYING: 'CLASSIFYING' };
@@ -31,18 +29,18 @@
     exportBtn: document.getElementById('export-btn'),
     settingsBtn: document.getElementById('settings-btn'),
     settingsPanel: document.getElementById('settings-panel'),
-    thresholdInput: document.getElementById('threshold-input'),
-    settleThresholdInput: document.getElementById('settle-threshold-input'),
-    settleFramesInput: document.getElementById('settle-frames-input'),
+    freefallLowInput: document.getElementById('freefall-low-input'),
+    freefallFramesInput: document.getElementById('freefall-frames-input'),
+    rotationLaunchInput: document.getElementById('rotation-launch-input'),
+    catchDropFracInput: document.getElementById('catch-drop-frac-input'),
+    catchDropFramesInput: document.getElementById('catch-drop-frames-input'),
+    minAirtimeInput: document.getElementById('min-airtime-input'),
     prerollInput: document.getElementById('preroll-input'),
     maxRecordInput: document.getElementById('max-record-input'),
     rotationWeightInput: document.getElementById('rotation-weight-input'),
     useRotationInput: document.getElementById('use-rotation-input'),
-    accelThresholdInput: document.getElementById('accel-threshold-input'),
     ambiguousMarginInput: document.getElementById('ambiguous-margin-input'),
     bailedToleranceInput: document.getElementById('bailed-tolerance-input'),
-    useOrientationLandingInput: document.getElementById('use-orientation-landing-input'),
-    screenUpThresholdInput: document.getElementById('screen-up-threshold-input'),
     visualiseInput: document.getElementById('visualise-input'),
     inferDifficultyInput: document.getElementById('infer-difficulty-input'),
     vizSection: document.getElementById('viz-section'),
@@ -146,7 +144,7 @@
     app.state = next;
     // CLASSIFYING continues listening for the next flip — init capture buffer + cooldown.
     if (next === State.CLASSIFYING) {
-      if (!app.capture) app.capture = { ring: [], frames: [], startedAt: 0, settleCount: 0 };
+      if (!app.capture) app.capture = { ring: [], frames: [], startedAt: 0, freefallCount: 0 };
       app.triggerCooldownUntil = performance.now() + 400;
     }
     render();
@@ -185,32 +183,32 @@
       } else {
         els.primaryBtn.textContent = 'Start';
         els.primaryBtn.disabled = false;
-        els.hint.textContent = 'Tap Start to arm motion capture. Flip the phone to record.';
+        els.hint.textContent = 'Tap Start to arm. Toss the phone — free-fall starts the capture.';
       }
     } else if (isArmed) {
       els.primaryBtn.textContent = 'Stop';
       els.primaryBtn.disabled = false;
-      els.hint.textContent = 'Armed. Flip the phone — capture triggers on motion.';
+      els.hint.textContent = 'Armed. Toss the phone — capture starts the moment it goes airborne.';
     } else if (isRecording) {
       els.primaryBtn.textContent = 'Recording…';
       els.primaryBtn.disabled = true;
-      els.hint.textContent = 'Hold still after the flip to finish capture.';
+      els.hint.textContent = 'Catch the phone to end capture.';
     }
 
     if (showLabel) renderLabelScreen();
 
-    els.thresholdInput.value = app.settings.threshold;
-    els.settleThresholdInput.value = app.settings.settleThreshold;
-    els.settleFramesInput.value = app.settings.settleFrames;
+    els.freefallLowInput.value = app.settings.freefallLow;
+    els.freefallFramesInput.value = app.settings.freefallFrames;
+    els.rotationLaunchInput.value = app.settings.rotationLaunch;
+    els.catchDropFracInput.value = app.settings.catchOmegaDropFrac;
+    els.catchDropFramesInput.value = app.settings.catchOmegaDropFrames;
+    els.minAirtimeInput.value = app.settings.minAirtimeMs;
     els.prerollInput.value = app.settings.prerollFrames;
     els.maxRecordInput.value = app.settings.maxRecordMs;
     els.rotationWeightInput.value = app.settings.rotationWeight;
     els.useRotationInput.checked = !!app.settings.useRotationDistance;
-    els.accelThresholdInput.value = app.settings.accelThreshold;
     els.ambiguousMarginInput.value = app.settings.ambiguousMargin;
     els.bailedToleranceInput.value = app.settings.bailedTolerance;
-    els.useOrientationLandingInput.checked = !!app.settings.useOrientationLanding;
-    els.screenUpThresholdInput.value = app.settings.screenUpThreshold;
     els.visualiseInput.checked = !!app.settings.visualise;
     els.inferDifficultyInput.checked = !!app.settings.inferDifficulty;
 
@@ -321,56 +319,62 @@
     }
 
     const rr = ev.rotationRate || { alpha: 0, beta: 0, gamma: 0 };
-    const a = ev.acceleration || ev.accelerationIncludingGravity || { x: 0, y: 0, z: 0 };
+    const aLin = ev.acceleration || { x: 0, y: 0, z: 0 };
+    const aG = ev.accelerationIncludingGravity || aLin || { x: 0, y: 0, z: 0 };
     const frame = {
       t: now,
-      accel: [a.x || 0, a.y || 0, a.z || 0],
+      accel: [aLin.x || 0, aLin.y || 0, aLin.z || 0],
       rotationRate: [rr.alpha || 0, rr.beta || 0, rr.gamma || 0],
       orientation: [0, 0, 0],
     };
+    // Free-fall detection uses gravity-inclusive magnitude: ~9.8 at rest, ~0 in flight.
+    const accelMag = Math.hypot(aG.x || 0, aG.y || 0, aG.z || 0);
     const omega = Math.hypot(frame.rotationRate[0], frame.rotationRate[1], frame.rotationRate[2]);
-    const accelMag = Math.hypot(frame.accel[0], frame.accel[1], frame.accel[2]);
-    const ratio = Math.max(
-      omega / Math.max(1, app.settings.threshold),
-      accelMag / Math.max(0.01, app.settings.accelThreshold)
-    );
-    els.triggerFill.style.width = Math.min(100, ratio * 100).toFixed(1) + '%';
-    els.triggerFill.classList.toggle('fired', ratio >= 1);
+
+    // trigger bar: blend free-fall proximity + rotation proximity. Either path can launch.
+    const ffLow = Math.max(0.01, app.settings.freefallLow);
+    const rotLaunch = Math.max(1, app.settings.rotationLaunch);
+    const ffRatio = accelMag <= ffLow ? 1 : Math.max(0, ffLow / accelMag);
+    const rotRatio = Math.min(1, omega / rotLaunch);
+    const fillRatio = Math.max(ffRatio, rotRatio);
+    els.triggerFill.style.width = (fillRatio * 100).toFixed(1) + '%';
+    els.triggerFill.classList.toggle('fired', fillRatio >= 1);
 
     if (app.state === State.ARMED || app.state === State.CLASSIFYING) {
       pushRing(frame);
       const inCooldown = app.triggerCooldownUntil && now < app.triggerCooldownUntil;
-      // #2 two-stage trigger: rotation OR accel impulse.
-      if (!inCooldown && (omega > app.settings.threshold || accelMag > app.settings.accelThreshold)) {
-        play(app.popSound);
-        startRecording(frame);
+      if (!inCooldown) {
+        if (accelMag < ffLow) {
+          app.capture.freefallCount = (app.capture.freefallCount || 0) + 1;
+        } else {
+          app.capture.freefallCount = 0;
+        }
+        const ffLaunch = app.capture.freefallCount >= app.settings.freefallFrames;
+        const rotLaunchHit = omega > rotLaunch;
+        if (ffLaunch || rotLaunchHit) {
+          play(app.popSound);
+          startRecording(frame);
+        }
       }
     } else if (app.state === State.RECORDING) {
       app.capture.frames.push(frame);
-      if (omega < app.settings.settleThreshold) {
-        app.capture.settleCount++;
-      } else {
-        app.capture.settleCount = 0;
-      }
       const elapsed = now - app.capture.startedAt;
-      // landed: screen faces up + low |ω| + min elapsed. Any yaw, any partial roll/pitch ok.
-      let landed = false;
-      if (app.settings.useOrientationLanding
-          && app.lastOrientation
-          && elapsed >= app.settings.minRecordMs
-          && omega < app.settings.settleThreshold) {
-        const z = screenUpScore(app.lastOrientation.beta, app.lastOrientation.gamma);
-        if (z > app.settings.screenUpThreshold) {
-          app.capture.landedCount = (app.capture.landedCount || 0) + 1;
-          if (app.capture.landedCount >= app.settings.landedHoldFrames) landed = true;
+
+      // Track peak rotation. Catch = |ω| drops sharply from peak (hand grip kills spin).
+      if (omega > (app.capture.peakOmega || 0)) app.capture.peakOmega = omega;
+
+      let reason = null;
+      const peakReached = app.capture.peakOmega >= rotLaunch * 0.5;
+      if (elapsed >= app.settings.minAirtimeMs && peakReached) {
+        const dropTarget = app.capture.peakOmega * app.settings.catchOmegaDropFrac;
+        if (omega < dropTarget) {
+          app.capture.omegaDropCount = (app.capture.omegaDropCount || 0) + 1;
+          if (app.capture.omegaDropCount >= app.settings.catchOmegaDropFrames) reason = 'catch';
         } else {
-          app.capture.landedCount = 0;
+          app.capture.omegaDropCount = 0;
         }
       }
-      let reason = null;
-      if (landed) reason = 'landed';
-      else if (app.capture.settleCount >= app.settings.settleFrames) reason = 'settle';
-      else if (elapsed >= app.settings.maxRecordMs) reason = 'max-time';
+      if (!reason && elapsed >= app.settings.maxRecordMs) reason = 'max-time';
       if (reason) {
         app.capture.finishReason = reason;
         finishRecording();
@@ -379,7 +383,7 @@
   }
 
   function pushRing(frame) {
-    if (!app.capture) app.capture = { ring: [], frames: [], startedAt: 0, settleCount: 0 };
+    if (!app.capture) app.capture = { ring: [], frames: [], startedAt: 0, freefallCount: 0 };
     app.capture.ring.push(frame);
     if (app.capture.ring.length > app.settings.prerollFrames) app.capture.ring.shift();
   }
@@ -390,8 +394,9 @@
       ring: [],
       frames: ring.concat([triggerFrame]),
       startedAt: performance.now(),
-      settleCount: 0,
-      landedCount: 0,
+      freefallCount: 0,
+      peakOmega: 0,
+      omegaDropCount: 0,
       startOrientation: app.lastOrientation ? { ...app.lastOrientation } : null,
     };
     setState(State.RECORDING);
@@ -428,7 +433,7 @@
     app.capture = null;
     if (!frames || frames.length < 4) {
       setState(State.ARMED);
-      app.capture = { ring: [], frames: [], startedAt: 0, settleCount: 0 };
+      app.capture = { ring: [], frames: [], startedAt: 0, freefallCount: 0 };
       return;
     }
     const sample = framesToSample(frames);
@@ -884,7 +889,7 @@
       }
       attachMotion();
       acquireWakeLock();
-      app.capture = { ring: [], frames: [], startedAt: 0, settleCount: 0 };
+      app.capture = { ring: [], frames: [], startedAt: 0, freefallCount: 0 };
       setState(State.ARMED);
     } else if (app.state === State.ARMED) {
       detachMotion();
@@ -908,19 +913,35 @@
     els.settingsPanel.hidden = !els.settingsPanel.hidden;
   });
 
-  els.thresholdInput.addEventListener('change', () => {
-    app.settings.threshold = clamp(+els.thresholdInput.value || DEFAULTS.threshold, 1, 500);
+  els.freefallLowInput.addEventListener('change', () => {
+    app.settings.freefallLow = clamp(+els.freefallLowInput.value || DEFAULTS.freefallLow, 0.1, 9.8);
     saveLocal();
     render();
   });
-  els.settleThresholdInput.addEventListener('change', () => {
-    app.settings.settleThreshold = clamp(+els.settleThresholdInput.value || DEFAULTS.settleThreshold, 1, 500);
+  els.freefallFramesInput.addEventListener('change', () => {
+    const v = parseInt(els.freefallFramesInput.value, 10);
+    app.settings.freefallFrames = Number.isFinite(v) ? clamp(v, 1, 30) : DEFAULTS.freefallFrames;
     saveLocal();
     render();
   });
-  els.settleFramesInput.addEventListener('change', () => {
-    const v = parseInt(els.settleFramesInput.value, 10);
-    app.settings.settleFrames = Number.isFinite(v) ? clamp(v, 1, 120) : DEFAULTS.settleFrames;
+  els.rotationLaunchInput.addEventListener('change', () => {
+    app.settings.rotationLaunch = clamp(+els.rotationLaunchInput.value || DEFAULTS.rotationLaunch, 50, 3000);
+    saveLocal();
+    render();
+  });
+  els.catchDropFracInput.addEventListener('change', () => {
+    app.settings.catchOmegaDropFrac = clamp(+els.catchDropFracInput.value || DEFAULTS.catchOmegaDropFrac, 0.05, 0.95);
+    saveLocal();
+    render();
+  });
+  els.catchDropFramesInput.addEventListener('change', () => {
+    const v = parseInt(els.catchDropFramesInput.value, 10);
+    app.settings.catchOmegaDropFrames = Number.isFinite(v) ? clamp(v, 1, 30) : DEFAULTS.catchOmegaDropFrames;
+    saveLocal();
+    render();
+  });
+  els.minAirtimeInput.addEventListener('change', () => {
+    app.settings.minAirtimeMs = clamp(+els.minAirtimeInput.value || DEFAULTS.minAirtimeMs, 0, 2000);
     saveLocal();
     render();
   });
@@ -944,11 +965,6 @@
     saveLocal();
     render();
   });
-  els.accelThresholdInput.addEventListener('change', () => {
-    app.settings.accelThreshold = clamp(+els.accelThresholdInput.value || 0, 0, 100);
-    saveLocal();
-    render();
-  });
   els.ambiguousMarginInput.addEventListener('change', () => {
     app.settings.ambiguousMargin = clamp(+els.ambiguousMarginInput.value || 0, 0, 1);
     saveLocal();
@@ -956,16 +972,6 @@
   });
   els.bailedToleranceInput.addEventListener('change', () => {
     app.settings.bailedTolerance = clamp(+els.bailedToleranceInput.value || 0, 0, 180);
-    saveLocal();
-    render();
-  });
-  els.useOrientationLandingInput.addEventListener('change', () => {
-    app.settings.useOrientationLanding = els.useOrientationLandingInput.checked;
-    saveLocal();
-    render();
-  });
-  els.screenUpThresholdInput.addEventListener('change', () => {
-    app.settings.screenUpThreshold = clamp(+els.screenUpThresholdInput.value || 0, -1, 1);
     saveLocal();
     render();
   });
