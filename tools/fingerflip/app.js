@@ -1055,6 +1055,22 @@
     try { snd.currentTime = 0; snd.play().catch(() => {}); } catch (_) {}
   }
 
+  function renderDesktopQr() {
+    const host = document.getElementById('desktop-banner-qr');
+    const urlEl = document.getElementById('desktop-banner-url');
+    const url = window.location.href;
+    if (urlEl) urlEl.textContent = url;
+    if (!host || typeof qrcode !== 'function') return;
+    try {
+      const qr = qrcode(0, 'M');
+      qr.addData(url);
+      qr.make();
+      host.innerHTML = qr.createSvgTag({ scalable: true, margin: 0 });
+    } catch (e) {
+      host.hidden = true;
+    }
+  }
+
   function isMobileDevice() {
     if (!('DeviceMotionEvent' in window)) return false;
     if (navigator.maxTouchPoints > 0) return true;
@@ -1070,6 +1086,7 @@
     if (!app.isMobile) {
       const banner = document.getElementById('desktop-banner');
       if (banner) banner.hidden = false;
+      renderDesktopQr();
     }
     render();
   })();

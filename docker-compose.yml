@@ -7,6 +7,10 @@ services:
       - "4000"
     ports:
       - "4000:4000"
+    environment:
+      BUNDLE_PATH: /usr/local/bundle
+      BUNDLE_BIN: /usr/local/bundle/bin
+      GEM_HOME: /usr/local/bundle
     volumes:
       - .:/srv/jekyll
       - bundle_cache:/usr/local/bundle

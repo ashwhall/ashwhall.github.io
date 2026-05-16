@@ -20,12 +20,17 @@
     })();
   </script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-  <link rel="stylesheet" href="./app.css?v=26" />
+  <link rel="stylesheet" href="./app.css?v=30" />
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 </head>
 <body>
   <main class="container">
     <div id="desktop-banner" class="desktop-banner" hidden>
-      <strong>Mobile only.</strong> Fingerflip uses your phone's motion sensors. Open this page on your phone over HTTPS to use it.
+      <div class="desktop-banner-text">
+        <strong>Mobile only.</strong> Fingerflip uses your phone's motion sensors. Scan to open on your phone.
+        <p class="muted small" id="desktop-banner-url"></p>
+      </div>
+      <div id="desktop-banner-qr" class="desktop-banner-qr"></div>
     </div>
     <header>
       <h1>Fingerflip</h1>
@@ -164,6 +169,6 @@
     </footer>
   </main>
 
-  <script src="./app.js?v=26"></script>
+  <script src="./app.js?v=30"></script>
 </body>
 </html>

@@ -200,6 +200,33 @@ header h1 {
   padding: 0.75rem 1rem;
   border-radius: var(--pico-border-radius);
   margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.desktop-banner-text {
+  flex: 1;
+}
+
+.desktop-banner-text .muted {
+  color: rgba(0, 0, 0, 0.65);
+  word-break: break-all;
+  margin: 0.5rem 0 0;
+}
+
+.desktop-banner-qr {
+  flex: 0 0 auto;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  line-height: 0;
+}
+
+.desktop-banner-qr svg {
+  display: block;
+  width: 160px;
+  height: 160px;
 }
 
 .bailed-hint {
