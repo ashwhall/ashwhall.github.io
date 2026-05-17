@@ -1870,20 +1870,32 @@ if (isIOS && !isStandalone && !config.installHintDismissed) {
 }
 
 // Service worker registration — silent failure if unsupported / file://.
-// When a new SW takes control (build bumped CACHE_VERSION), reload once so
-// the user picks up the fresh app shell without a manual tap.
+// When a new SW takes control (build bumped CACHE_VERSION), surface a toast
+// and reload so the user picks up the fresh app shell.
 if ('serviceWorker' in navigator) {
+  const hadController = !!navigator.serviceWorker.controller;
+
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      const trackInstall = (worker) => {
+        if (!worker) return;
+        worker.addEventListener('statechange', () => {
+          // Only an update if a controller already existed at page load.
+          if (worker.state === 'installed' && hadController) {
+            showToast('Update downloaded — reloading…');
+          }
+        });
+      };
+      trackInstall(reg.installing);
+      reg.addEventListener('updatefound', () => trackInstall(reg.installing));
+    }).catch(() => {});
   });
 
-  // Skip the first controllerchange — that's the initial takeover at first
-  // visit, not an update. Reload only on subsequent SW swaps.
-  const hadController = !!navigator.serviceWorker.controller;
   let reloadedForSW = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!hadController || reloadedForSW) return;
     reloadedForSW = true;
-    location.reload();
+    // Tiny delay so the toast is visible before reload.
+    setTimeout(() => location.reload(), 600);
   });
 }

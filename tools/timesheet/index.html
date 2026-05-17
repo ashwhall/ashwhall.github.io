@@ -1219,17 +1219,28 @@
     }
     setTimeout(() => { maybeRequestPersistence(); }, 600);
 
-    // Service worker registration + auto-reload on update.
+    // Service worker registration — toast + reload when an update lands.
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
-      });
       const hadController = !!navigator.serviceWorker.controller;
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then((reg) => {
+          const trackInstall = (worker) => {
+            if (!worker) return;
+            worker.addEventListener('statechange', () => {
+              if (worker.state === 'installed' && hadController) {
+                showToast('Update downloaded — reloading…');
+              }
+            });
+          };
+          trackInstall(reg.installing);
+          reg.addEventListener('updatefound', () => trackInstall(reg.installing));
+        }).catch(() => {});
+      });
       let reloadedForSW = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!hadController || reloadedForSW) return;
         reloadedForSW = true;
-        location.reload();
+        setTimeout(() => location.reload(), 600);
       });
     }
   </script>
