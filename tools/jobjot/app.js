@@ -5,6 +5,13 @@
 const CONFIG_KEY = 'jobjot.config.v1';
 const JOBS_KEY = 'jobjot.jobs.v1';
 
+// Versioned export envelope. Bump SCHEMA_VERSION when the on-disk shape
+// changes; future imports can branch on `__version`. Old unwrapped exports
+// (plain object / plain array) are still accepted as version 0.
+const EXPORT_TYPE_CONFIG = 'jobjot.config';
+const EXPORT_TYPE_JOBS = 'jobjot.jobs';
+const SCHEMA_VERSION = 1;
+
 const DROPDOWN_FIELDS = [
   { key: 'vehicles', label: 'Vehicles', singular: 'vehicle' },
   { key: 'crewMembers', label: 'Crew members', singular: 'crew member' },
@@ -1533,6 +1540,55 @@ function downloadJson(filename, data) {
   URL.revokeObjectURL(url);
 }
 
+// Wrap a payload in a versioned envelope. Future imports branch on __version.
+function wrapExport(type, data) {
+  return {
+    __type: type,
+    __version: SCHEMA_VERSION,
+    exportedAt: Date.now(),
+    data,
+  };
+}
+
+// Unwrap a versioned envelope OR fall back to legacy shape. Throws a
+// user-facing Error on type mismatch or structural mismatch.
+function unwrapImport(parsed, expectedType, legacyKind) {
+  const isEnvelope =
+    parsed !== null
+    && typeof parsed === 'object'
+    && !Array.isArray(parsed)
+    && '__type' in parsed
+    && 'data' in parsed;
+
+  if (isEnvelope) {
+    if (parsed.__type !== expectedType) {
+      throw new Error(
+        `This file is "${parsed.__type}", but a "${expectedType}" file was expected.`,
+      );
+    }
+    return parsed.data;
+  }
+
+  // Legacy shape: sniff to catch obvious file-type mistakes.
+  if (legacyKind === 'jobs' && !Array.isArray(parsed)) {
+    throw new Error('Imported file is not a jobs list.');
+  }
+  if (
+    legacyKind === 'config'
+    && (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed))
+  ) {
+    throw new Error('Imported file is not a configuration object.');
+  }
+  return parsed;
+}
+
+// HH-MM stamp so two exports the same day don't collide.
+function exportStamp() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+}
+
 function readJsonFile(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -1549,8 +1605,7 @@ function readJsonFile(file) {
 }
 
 document.getElementById('export-config-btn').addEventListener('click', () => {
-  const stamp = new Date().toISOString().slice(0, 10);
-  downloadJson(`jobjot-config-${stamp}.json`, config);
+  downloadJson(`jobjot-config-${exportStamp()}.json`, wrapExport(EXPORT_TYPE_CONFIG, config));
   showToast('Config exported');
 });
 
@@ -1564,29 +1619,39 @@ document
     const file = e.target.files[0];
     e.target.value = '';
     if (!file) return;
+
+    let payload;
     try {
-      const data = await readJsonFile(file);
-      const ok = await showConfirm(
-        'Replace current configuration with imported file?',
-        {
-          title: 'Import config',
-          confirmLabel: 'Replace',
-        },
-      );
-      if (!ok) return;
-      config = sanitizeConfig(data);
-      saveConfig();
-      applyTheme();
-      renderConfigView();
-      showToast('Config imported');
-    } catch (_) {
-      await showAlert('Could not read JSON file.', { title: 'Import failed' });
+      const parsed = await readJsonFile(file);
+      payload = unwrapImport(parsed, EXPORT_TYPE_CONFIG, 'config');
+    } catch (err) {
+      await showAlert(err.message || 'Could not read JSON file.', {
+        title: 'Import failed',
+      });
+      return;
     }
+
+    const ok = await showConfirm(
+      'Replace current configuration with imported file?',
+      { title: 'Import config', confirmLabel: 'Replace' },
+    );
+    if (!ok) return;
+
+    config = sanitizeConfig(payload);
+    saveConfig();
+    applyTheme();
+    renderConfigView();
+
+    const counts = DROPDOWN_FIELDS.map(
+      (f) => `${config[f.key].length} ${f.label.toLowerCase()}`,
+    ).join(', ');
+    await showAlert(`Config imported. Loaded: ${counts}.`, {
+      title: 'Import complete',
+    });
   });
 
 document.getElementById('export-jobs-btn').addEventListener('click', () => {
-  const stamp = new Date().toISOString().slice(0, 10);
-  downloadJson(`jobjot-jobs-${stamp}.json`, jobs);
+  downloadJson(`jobjot-jobs-${exportStamp()}.json`, wrapExport(EXPORT_TYPE_JOBS, jobs));
   showToast('Jobs exported');
 });
 
@@ -1600,38 +1665,58 @@ document
     const file = e.target.files[0];
     e.target.value = '';
     if (!file) return;
+
+    let payload;
     try {
-      const data = await readJsonFile(file);
-      if (!Array.isArray(data)) {
-        await showAlert('Imported file is not a jobs list.', {
-          title: 'Import failed',
-        });
-        return;
-      }
-      const mode = await showChoice(
-        'How should imported jobs be applied?',
-        [
-          { label: 'Merge', value: 'merge', primary: true },
-          { label: 'Replace all', value: 'replace', danger: true },
-        ],
-        { title: 'Import jobs' },
-      );
-      if (!mode) return;
-      const imported = data.map(sanitizeJob).filter(Boolean);
-      if (mode === 'replace') {
-        jobs = imported;
-      } else {
-        const existingIds = new Set(jobs.map((j) => j.id));
-        for (const j of imported) {
-          if (existingIds.has(j.id)) j.id = genId();
-          jobs.push(j);
-        }
-      }
-      saveJobs();
-      showToast('Jobs imported');
-    } catch (_) {
-      await showAlert('Could not read JSON file.', { title: 'Import failed' });
+      const parsed = await readJsonFile(file);
+      payload = unwrapImport(parsed, EXPORT_TYPE_JOBS, 'jobs');
+    } catch (err) {
+      await showAlert(err.message || 'Could not read JSON file.', {
+        title: 'Import failed',
+      });
+      return;
     }
+
+    if (!Array.isArray(payload)) {
+      await showAlert('Imported file is not a jobs list.', {
+        title: 'Import failed',
+      });
+      return;
+    }
+
+    const mode = await showChoice(
+      'How should imported jobs be applied?',
+      [
+        { label: 'Merge', value: 'merge', primary: true },
+        { label: 'Replace all', value: 'replace', danger: true },
+      ],
+      { title: 'Import jobs' },
+    );
+    if (!mode) return;
+
+    const rawCount = payload.length;
+    const imported = payload.map(sanitizeJob).filter(Boolean);
+    const dropped = rawCount - imported.length;
+    const missingNumber = imported.filter((j) => !j.jobNumber).length;
+
+    if (mode === 'replace') {
+      jobs = imported;
+    } else {
+      const existingIds = new Set(jobs.map((j) => j.id));
+      for (const j of imported) {
+        if (existingIds.has(j.id)) j.id = genId();
+        jobs.push(j);
+      }
+    }
+    saveJobs();
+    renderList();
+
+    const lines = [
+      `${imported.length} job${imported.length === 1 ? '' : 's'} ${mode === 'replace' ? 'loaded' : 'added'}.`,
+    ];
+    if (dropped > 0) lines.push(`${dropped} skipped (unreadable).`);
+    if (missingNumber > 0) lines.push(`${missingNumber} missing a job number.`);
+    await showAlert(lines.join(' '), { title: 'Import complete' });
   });
 
 document
@@ -1674,6 +1759,85 @@ filterEl.addEventListener('change', () => {
 
 renderList();
 showView('list');
+
+// Fire after initial paint so the user sees the app before any modal.
+setTimeout(() => { maybeRequestPersistence(); }, 600);
+
+// ─── Install hint / persistent storage ──────────────────────────────────
+
+// Ask the browser to keep our storage durably. Mostly relevant on Android,
+// where calling persist() can surface a system permission prompt — so we
+// pre-explain with our own modal, and only ask once.
+async function maybeRequestPersistence() {
+  if (!navigator.storage?.persist) return;
+  if (config.persistAsked) return;
+  let already = false;
+  try { already = await navigator.storage.persisted(); } catch (_) {}
+  if (already) {
+    config.persistAsked = true;
+    saveConfig();
+    return;
+  }
+  const ok = await showConfirm(
+    'JobJot stores your jobs on this device. Allowing persistent storage prevents the browser from clearing them when space is low. You may see a system prompt next.',
+    { title: 'Keep your jobs safe', confirmLabel: 'Allow' },
+  );
+  config.persistAsked = true;
+  saveConfig();
+  if (!ok) return;
+  try { await navigator.storage.persist(); } catch (_) {}
+}
+
+const banner = document.getElementById('install-banner');
+const bannerText = document.getElementById('install-banner-text');
+const bannerInstall = document.getElementById('install-banner-install');
+const bannerDismiss = document.getElementById('install-banner-dismiss');
+
+const isStandalone =
+  window.matchMedia('(display-mode: standalone)').matches
+  || window.navigator.standalone === true;
+
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+function showInstallBanner(text, withInstallBtn) {
+  bannerText.textContent = text;
+  bannerInstall.hidden = !withInstallBtn;
+  banner.hidden = false;
+}
+
+bannerDismiss.addEventListener('click', () => {
+  banner.hidden = true;
+  config.installHintDismissed = true;
+  saveConfig();
+});
+
+// Android / desktop Chromium: capture the prompt event for a custom button.
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (isStandalone || config.installHintDismissed) return;
+  showInstallBanner('Install JobJot for quicker access and offline use.', true);
+});
+
+bannerInstall.addEventListener('click', async () => {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  try { await deferredInstallPrompt.userChoice; } catch (_) {}
+  deferredInstallPrompt = null;
+  banner.hidden = true;
+});
+
+window.addEventListener('appinstalled', () => {
+  banner.hidden = true;
+  deferredInstallPrompt = null;
+});
+
+// iOS Safari has no install prompt — show a one-liner with the manual steps,
+// dismissible. Skip if already added to home screen, or previously dismissed.
+if (isIOS && !isStandalone && !config.installHintDismissed) {
+  showInstallBanner('Install: tap Share → Add to Home Screen.', false);
+}
 
 // Service worker registration — silent failure if unsupported / file://.
 // When a new SW takes control (build bumped CACHE_VERSION), reload once so

@@ -259,6 +259,16 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <!-- Install hint banner (Android: appears when browser offers install;
+       iOS: shows "Share → Add to Home Screen" until dismissed) -->
+  <div class="install-banner" id="install-banner" hidden>
+    <span id="install-banner-text"></span>
+    <div class="install-banner-actions">
+      <button class="secondary outline small-btn" id="install-banner-dismiss" type="button">Dismiss</button>
+      <button class="primary small-btn" id="install-banner-install" type="button" hidden>Install</button>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 
