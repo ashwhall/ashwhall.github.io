@@ -39,16 +39,37 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  const req = event.request;
+  if (req.method !== 'GET') return;
+
+  const isNav = req.mode === 'navigate' || req.destination === 'document';
+
+  if (isNav) {
+    // Network-first for HTML so deployed updates land on the next online visit.
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE_VERSION).then((cache) => cache.put(req, clone));
+          }
+          return res;
+        })
+        .catch(() => caches.match(req).then((c) => c || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // Cache-first for static assets.
   event.respondWith(
-    caches.match(event.request).then((cached) => {
+    caches.match(req).then((cached) => {
       if (cached) return cached;
-      return fetch(event.request)
+      return fetch(req)
         .then((res) => {
           // Opportunistically cache same-origin assets we didn't pre-list.
-          if (res.ok && new URL(event.request.url).origin === location.origin) {
+          if (res.ok && new URL(req.url).origin === location.origin) {
             const clone = res.clone();
-            caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, clone));
+            caches.open(CACHE_VERSION).then((cache) => cache.put(req, clone));
           }
           return res;
         })

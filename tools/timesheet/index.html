@@ -1234,6 +1234,9 @@
           };
           trackInstall(reg.installing);
           reg.addEventListener('updatefound', () => trackInstall(reg.installing));
+
+          reg.update().catch(() => {});
+          window.addEventListener('focus', () => reg.update().catch(() => {}));
         }).catch(() => {});
       });
       let reloadedForSW = false;

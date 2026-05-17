@@ -1888,6 +1888,10 @@ if ('serviceWorker' in navigator) {
       };
       trackInstall(reg.installing);
       reg.addEventListener('updatefound', () => trackInstall(reg.installing));
+
+      // Nudge the browser to recheck sw.js on load and when the tab regains focus.
+      reg.update().catch(() => {});
+      window.addEventListener('focus', () => reg.update().catch(() => {}));
     }).catch(() => {});
   });
 
