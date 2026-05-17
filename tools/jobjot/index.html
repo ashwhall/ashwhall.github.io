@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JobJot</title>
+  <link rel="shortcut icon" href="/public/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/public/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/public/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/public/favicon-192x192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/public/favicon-512x512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/public/apple-touch-icon.png" />
+  <script>
+    (function () {
+      try {
+        const s = JSON.parse(localStorage.getItem('jobjot.config.v1') || '{}');
+        const theme = s.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (_) { }
+    })();
+  </script>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#11191f" />
+  <link rel="stylesheet" href="pico.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <main class="container">
+    <header>
+      <h1 id="app-title">JobJot</h1>
+      <div class="header-actions">
+        <button class="icon-btn" id="config-toggle" aria-label="Configuration" title="Configuration">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+        </button>
+        <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark/light mode" title="Toggle dark/light mode">
+          <svg id="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </svg>
+          <svg id="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Job list view -->
+    <section id="list-view">
+      <div class="list-header">
+        <h2>Jobs</h2>
+        <button class="primary new-job-btn" id="new-job-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          New job
+        </button>
+      </div>
+      <div class="list-controls">
+        <label class="list-control">
+          <span>Sort</span>
+          <select id="list-sort">
+            <option value="date-desc">Newest first</option>
+            <option value="date-asc">Oldest first</option>
+            <option value="number-asc">Job number (A→Z)</option>
+            <option value="number-desc">Job number (Z→A)</option>
+          </select>
+        </label>
+        <label class="list-control">
+          <span>Filter</span>
+          <select id="list-filter">
+            <option value="all">All jobs</option>
+            <option value="incomplete">Incomplete only</option>
+            <option value="pending">Not in OIMS</option>
+            <option value="entered">In OIMS</option>
+          </select>
+        </label>
+      </div>
+      <div id="jobs-container"></div>
+      <p id="empty-msg" class="empty-msg" hidden>No jobs yet. Tap "New job" to start.</p>
+    </section>
+
+    <!-- Job edit view -->
+    <section id="edit-view" hidden>
+      <div class="edit-header">
+        <button class="icon-btn" id="back-btn" aria-label="Back to list" title="Back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        <span id="edit-title">New job</span>
+        <div class="edit-header-actions">
+          <button class="icon-btn" id="copy-next-btn" aria-label="Copy vehicles to next job"
+            title="Copy vehicles to next job">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+          </button>
+          <button class="icon-btn delete-btn" id="delete-btn" aria-label="Delete job" title="Delete job">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6" />
+              <path d="M10 11v6M14 11v6" />
+              <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="incomplete-banner" class="incomplete-banner" hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+        <span>This job is missing required information.</span>
+      </div>
+
+      <article class="job-form">
+        <label for="f-jobNumber">
+          <span class="field-label" id="label-jobNumber">Job number</span>
+          <input type="text" id="f-jobNumber" autocomplete="off" />
+        </label>
+
+        <label for="f-jobType">
+          <span class="field-label" id="label-jobType">Type of job</span>
+          <select id="f-jobType"></select>
+        </label>
+
+        <label>
+          Description
+          <input type="text" id="f-description" autocomplete="off" placeholder="e.g. tree on car" />
+        </label>
+
+        <hr class="form-divider" />
+
+        <div class="field-group">
+          <div class="group-header"><span>Times</span></div>
+          <div id="times-container"></div>
+        </div>
+
+        <hr class="form-divider" />
+
+        <div class="field-group">
+          <div class="group-header"><span class="field-label" id="label-vehicles">Vehicles</span></div>
+          <div id="vehicles-container"></div>
+          <button class="secondary outline section-add-btn" id="add-vehicle-btn" type="button">+ Add vehicle</button>
+        </div>
+
+        <hr class="form-divider" />
+
+        <div class="field-group">
+          <div class="group-header"><span>Equipment used</span></div>
+          <div id="equipment-rows"></div>
+          <button class="secondary outline section-add-btn" id="add-equipment-btn" type="button">+ Add
+            equipment</button>
+        </div>
+
+        <hr class="form-divider" />
+
+        <label>
+          Notes
+          <textarea id="f-notes" rows="3"></textarea>
+        </label>
+
+        <hr class="form-divider" />
+
+        <label class="checkbox-row">
+          <input type="checkbox" id="f-entered" role="switch" />
+          Entered into OIMS
+        </label>
+      </article>
+    </section>
+
+    <!-- Copy-vehicles modal -->
+    <div class="modal-backdrop" id="copy-modal" hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="copy-modal-title">
+        <h3 id="copy-modal-title">Copy vehicles to next job</h3>
+        <p class="modal-sub">Select which vehicles carry over. Their crew members come with them.</p>
+        <div id="copy-modal-list"></div>
+        <div class="modal-actions">
+          <button class="secondary outline small-btn" id="copy-modal-cancel" type="button">Cancel</button>
+          <button class="primary small-btn" id="copy-modal-confirm" type="button">Create job</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Config view -->
+    <section id="config-view" hidden>
+      <div class="edit-header">
+        <button class="icon-btn" id="config-back-btn" aria-label="Back" title="Back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        <span>Configuration</span>
+        <span></span>
+      </div>
+
+      <div class="settings-section">
+        <h3>Dropdown options</h3>
+        <div id="config-lists"></div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Data — configuration</h3>
+        <div class="settings-row">
+          <span class="row-label">Export config to JSON file</span>
+          <button class="secondary outline small-btn" id="export-config-btn">Export</button>
+        </div>
+        <div class="settings-row">
+          <span class="row-label">Import config from JSON file</span>
+          <button class="secondary outline small-btn" id="import-config-btn">Import</button>
+          <input type="file" id="import-config-file" accept="application/json" hidden />
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Data — jobs</h3>
+        <div class="settings-row">
+          <span class="row-label">Export jobs to JSON file</span>
+          <button class="secondary outline small-btn" id="export-jobs-btn">Export</button>
+        </div>
+        <div class="settings-row">
+          <span class="row-label">Import jobs from JSON file</span>
+          <button class="secondary outline small-btn" id="import-jobs-btn">Import</button>
+          <input type="file" id="import-jobs-file" accept="application/json" hidden />
+        </div>
+        <div class="settings-row">
+          <span class="row-label">Delete all saved jobs</span>
+          <button class="secondary outline small-btn danger" id="clear-jobs-btn">Clear</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
