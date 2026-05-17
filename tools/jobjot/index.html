@@ -3,8 +3,11 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>JobJot</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="JobJot" />
   <link rel="shortcut icon" href="/public/favicon.ico" />
   <link rel="icon" type="image/png" sizes="16x16" href="/public/favicon-16x16.png" />
   <link rel="icon" type="image/png" sizes="32x32" href="/public/favicon-32x32.png" />
@@ -87,6 +90,7 @@
           <span>Filter</span>
           <select id="list-filter">
             <option value="all">All jobs</option>
+            <option value="in-progress">In progress</option>
             <option value="incomplete">Incomplete only</option>
             <option value="pending">Not in OIMS</option>
             <option value="entered">In OIMS</option>

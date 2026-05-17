@@ -29,6 +29,8 @@ sidebar_links:
     url: '/papers/'
   - title: 'Posts'
     url: '/posts/'
+  - title: 'Tools'
+    url: '/tools/'
   # TODO: Add projects
   # - title: "Projects"
   #   url: "/projects/"

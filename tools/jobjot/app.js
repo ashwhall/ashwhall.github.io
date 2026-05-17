@@ -39,7 +39,7 @@ function defaultConfig() {
     listSort: 'date-desc',
     listFilter: 'all',
     vehicles: [],
-    crewMembers: [''],
+    crewMembers: [],
     roles: ['Driver'],
     jobTypes: ['Rescue'],
     equipment: [],
@@ -132,29 +132,8 @@ function loadJobs() {
   } catch (_) {
     jobs = [];
   }
-  pruneEmptyRows();
-}
-
-// Remove unfinished rows (no primary value) from every job, so a half-added
-// row doesn't survive a page reload. Empty crew rows inside otherwise valid
-// vehicles are also dropped.
-function pruneEmptyRows() {
-  let changed = false;
-  for (const j of jobs) {
-    const beforeV = j.vehicles.length;
-    j.vehicles = j.vehicles.filter((v) => v.vehicle);
-    for (const v of j.vehicles) {
-      const beforeC = v.crew.length;
-      v.crew = v.crew.filter((c) => c.name);
-      if (v.crew.length !== beforeC) changed = true;
-    }
-    if (j.vehicles.length !== beforeV) changed = true;
-
-    const beforeE = j.equipment.length;
-    j.equipment = j.equipment.filter((e) => e.equipment);
-    if (j.equipment.length !== beforeE) changed = true;
-  }
-  if (changed) saveJobs();
+  pruneEmptyRowsInPlace();
+  saveJobs();
 }
 
 function saveJobs() {
@@ -687,6 +666,11 @@ function listDateFor(job) {
 
 function applyListFilter(list) {
   switch (config.listFilter) {
+    case 'in-progress':
+      // Started but not closed out: any start time set, no inStation yet.
+      return list.filter(
+        (j) => (j.times.enroute || j.times.onScene) && !j.times.inStation,
+      );
     case 'incomplete':
       return list.filter((j) => !isJobComplete(j));
     case 'pending':

@@ -90,15 +90,11 @@ header h1 {
   gap: 0.625rem;
   padding: 0.625rem 0.875rem;
   margin-bottom: 1rem;
-  background: color-mix(in srgb, #e67e22 18%, transparent);
-  border: 1px solid color-mix(in srgb, #e67e22 45%, transparent);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
   border-radius: var(--pico-border-radius);
-  color: #8a4a00;
+  color: var(--warn-color);
   font-size: 0.875rem;
-}
-
-[data-theme='dark'] .incomplete-banner {
-  color: #ffb066;
 }
 
 .incomplete-banner svg {
@@ -115,11 +111,7 @@ header h1 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #c97a16;
-}
-
-[data-theme='dark'] .warn-icon {
-  color: #ffb066;
+  color: var(--warn-color);
 }
 
 .incomplete-icon {
@@ -131,12 +123,8 @@ header h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #c97a16;
+  color: var(--warn-color);
   pointer-events: none;
-}
-
-[data-theme='dark'] .incomplete-icon {
-  color: #ffb066;
 }
 
 .job-card:hover {
@@ -216,19 +204,14 @@ header h1 {
   color: var(--pico-primary);
 }
 
-.incomplete-tag {
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.1rem 0.45rem;
-  border-radius: 2rem;
-  background: color-mix(in srgb, #e67e22 22%, transparent);
-  color: #b35400;
+:root {
+  --warn-color: #c97a16;
+  --warn-bg: color-mix(in srgb, #c97a16 16%, transparent);
+  --warn-border: color-mix(in srgb, #c97a16 45%, transparent);
 }
 
-[data-theme='dark'] .incomplete-tag {
-  color: #ffb066;
+[data-theme='dark'] {
+  --warn-color: #ffb066;
 }
 
 .entered-pill {
