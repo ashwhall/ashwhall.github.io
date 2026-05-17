@@ -3,7 +3,7 @@ layout: page
 title: Tools
 ---
 
-Small browser-based tools that run entirely in the browser.
+Small tools that run entirely in the browser.
 
 <ul class="tools-list">
   <li>

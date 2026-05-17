@@ -755,6 +755,26 @@ header h1 {
   margin: 0.5rem 0 0;
 }
 
+.bmc-line {
+  text-align: center;
+  margin: 0.5rem 0 0;
+}
+
+.bmc-link {
+  display: inline-block;
+  font-size: 0.8125rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 2rem;
+  text-decoration: none;
+  color: var(--pico-muted-color);
+  border: 1px solid var(--pico-muted-border-color);
+}
+
+.bmc-link:hover {
+  color: var(--pico-color);
+  border-color: var(--pico-color);
+}
+
 .config-list {
   margin-bottom: 0.625rem;
 }

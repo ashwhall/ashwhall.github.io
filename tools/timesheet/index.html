@@ -138,6 +138,26 @@
       font-size: 0.875rem;
     }
 
+    .bmc-line {
+      text-align: center;
+      margin: 1rem 0 0;
+    }
+
+    .bmc-link {
+      display: inline-block;
+      font-size: 0.8125rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 2rem;
+      text-decoration: none;
+      color: var(--pico-muted-color);
+      border: 1px solid var(--pico-muted-border-color);
+    }
+
+    .bmc-link:hover {
+      color: var(--pico-color);
+      border-color: var(--pico-color);
+    }
+
     .settings-row .reset-btn {
       margin: 0;
       padding: 0.375rem 0.875rem;
@@ -470,6 +490,11 @@
           <button class="secondary outline reset-btn" id="reset-btn">Reset week</button>
         </div>
       </div>
+      <p class="bmc-line">
+        <a class="bmc-link" href="https://www.buymeacoffee.com/ashwhall" target="_blank" rel="noopener">
+          ☕ Buy me a coffee
+        </a>
+      </p>
     </div>
 
     <!-- Day list -->
@@ -980,9 +1005,18 @@
     // ─── Settings panel ───────────────────────────────────────────────────────
     let settingsOpen = false;
 
+    function applySettingsVisibility() {
+      document.getElementById('settings-panel').hidden = !settingsOpen;
+      // Hide the main timesheet UI when settings is open so it acts as a
+      // swap-view (matching the JobJot pattern), not an inserted block.
+      document.querySelector('.week-nav').hidden = settingsOpen;
+      document.getElementById('days-container').hidden = settingsOpen;
+      document.querySelector('.week-footer').hidden = settingsOpen;
+    }
+
     document.getElementById('settings-toggle').addEventListener('click', () => {
       settingsOpen = !settingsOpen;
-      document.getElementById('settings-panel').hidden = !settingsOpen;
+      applySettingsVisibility();
     });
 
     function applySettings() {
@@ -1013,7 +1047,7 @@
       saveState();
       editingNoteDay = null;
       settingsOpen = false;
-      document.getElementById('settings-panel').hidden = true;
+      applySettingsVisibility();
       renderDays();
       showToast('Week cleared');
     });
