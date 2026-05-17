@@ -1720,6 +1720,24 @@ document
   });
 
 document
+  .getElementById('reset-install-hint-btn')
+  .addEventListener('click', () => {
+    config.installHintDismissed = false;
+    saveConfig();
+    if (isStandalone) {
+      showToast('Already running as installed app');
+      return;
+    }
+    if (isIOS) {
+      showInstallBanner('Install JobJot for quicker access and offline use. Tap Share → Add to Home Screen.', false);
+    } else if (deferredInstallPrompt) {
+      showInstallBanner('Install JobJot for quicker access and offline use.', true);
+    } else {
+      showInstallBanner('Install: menu (⋮) → Install / Add to Home Screen.', false);
+    }
+  });
+
+document
   .getElementById('clear-jobs-btn')
   .addEventListener('click', async () => {
     const ok = await showConfirm(
@@ -1813,12 +1831,25 @@ bannerDismiss.addEventListener('click', () => {
 
 // Android / desktop Chromium: capture the prompt event for a custom button.
 let deferredInstallPrompt = null;
+let installPromptFired = false;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
+  installPromptFired = true;
   deferredInstallPrompt = e;
   if (isStandalone || config.installHintDismissed) return;
   showInstallBanner('Install JobJot for quicker access and offline use.', true);
 });
+
+// Fallback: if Chrome never fires beforeinstallprompt (engagement not met,
+// or previously installed and uninstalled), show a manual-steps hint.
+const isAndroid = /Android/.test(navigator.userAgent);
+if (isAndroid && !isStandalone && !config.installHintDismissed) {
+  setTimeout(() => {
+    if (installPromptFired) return;
+    if (!banner.hidden) return;
+    showInstallBanner('Install JobJot for quicker access and offline use. Menu (⋮) → Install / Add to Home Screen.', false);
+  }, 4000);
+}
 
 bannerInstall.addEventListener('click', async () => {
   if (!deferredInstallPrompt) return;
@@ -1836,7 +1867,7 @@ window.addEventListener('appinstalled', () => {
 // iOS Safari has no install prompt — show a one-liner with the manual steps,
 // dismissible. Skip if already added to home screen, or previously dismissed.
 if (isIOS && !isStandalone && !config.installHintDismissed) {
-  showInstallBanner('Install: tap Share → Add to Home Screen.', false);
+  showInstallBanner('Install JobJot for quicker access and offline use. Tap Share → Add to Home Screen.', false);
 }
 
 // Service worker registration — silent failure if unsupported / file://.
