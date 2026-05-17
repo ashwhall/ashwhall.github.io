@@ -13,6 +13,7 @@ const APP_SHELL = [
   './pico.min.css',
   './app.js',
   './manifest.json',
+  './build.json',
   '/public/favicon.ico',
   '/public/favicon-16x16.png',
   '/public/favicon-32x32.png',

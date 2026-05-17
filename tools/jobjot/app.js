@@ -1720,24 +1720,6 @@ document
   });
 
 document
-  .getElementById('reset-install-hint-btn')
-  .addEventListener('click', () => {
-    config.installHintDismissed = false;
-    saveConfig();
-    if (isStandalone) {
-      showToast('Already running as installed app');
-      return;
-    }
-    if (isIOS) {
-      showInstallBanner('Install JobJot for quicker access and offline use. Tap Share → Add to Home Screen.', false);
-    } else if (deferredInstallPrompt) {
-      showInstallBanner('Install JobJot for quicker access and offline use.', true);
-    } else {
-      showInstallBanner('Install: menu (⋮) → Install / Add to Home Screen.', false);
-    }
-  });
-
-document
   .getElementById('clear-jobs-btn')
   .addEventListener('click', async () => {
     const ok = await showConfirm(
@@ -1774,6 +1756,39 @@ filterEl.addEventListener('change', () => {
   saveConfig();
   renderList();
 });
+
+// About-section collapse state. Default open on first visit; user's choice
+// persists across sessions.
+(() => {
+  const el = document.getElementById('config-about');
+  if (!el) return;
+  el.open = config.aboutCollapsed !== true;
+  el.addEventListener('toggle', () => {
+    config.aboutCollapsed = !el.open;
+    saveConfig();
+  });
+})();
+
+// Surface build date in config (Jekyll renders build.json at deploy time;
+// local dev falls back to "dev (local)" because the template literal stays).
+(async () => {
+  const el = document.getElementById('build-date-value');
+  if (!el) return;
+  el.textContent = 'dev (local)';
+  try {
+    const res = await fetch('build.json', { cache: 'no-cache' });
+    if (!res.ok) return;
+    const text = await res.text();
+    if (text.includes('{{')) return; // unprocessed template
+    const data = JSON.parse(text);
+    const d = new Date(data.build);
+    if (isNaN(d.getTime())) return;
+    el.textContent = d.toLocaleString(undefined, {
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: false,
+    });
+  } catch (_) {}
+})();
 
 renderList();
 showView('list');

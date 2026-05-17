@@ -696,6 +696,82 @@ header h1 {
   margin: 0;
 }
 
+.row-value {
+  font-size: 0.875rem;
+  color: var(--pico-muted-color);
+  margin: 0;
+}
+
+.config-about {
+  background: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  margin: 0 0 1rem;
+  overflow: hidden;
+}
+
+.config-about > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--pico-color);
+  font-weight: 600;
+}
+
+.config-about > summary::-webkit-details-marker,
+.config-about > summary::marker {
+  display: none;
+  content: '';
+}
+
+/* Pico v2 adds its own chevron via summary::after — suppress it. */
+.config-about > summary::after {
+  display: none !important;
+  content: none !important;
+  background-image: none !important;
+}
+
+.about-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.about-caret {
+  transition: transform 0.15s;
+  color: var(--pico-muted-color);
+  flex-shrink: 0;
+}
+
+.config-about[open] .about-caret {
+  transform: rotate(180deg);
+}
+
+.config-about > ul {
+  margin: 0;
+  padding: 0 0.875rem 0.75rem 2rem;
+  font-size: 0.8125rem;
+  color: var(--pico-muted-color);
+  line-height: 1.5;
+}
+
+.config-about > ul li {
+  margin-bottom: 0.2rem;
+}
+
+.build-footer {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--pico-muted-color);
+  opacity: 0.7;
+  margin: 0.5rem 0 0;
+}
+
 .config-list {
   margin-bottom: 0.625rem;
 }

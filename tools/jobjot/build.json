@@ -1,0 +1,8 @@
+---
+# Jekyll renders this file at build time, injecting site.time. Served raw
+# without Jekyll (local dev), the template literal remains and the app falls
+# back to "dev (local)".
+---
+{
+  "build": "{{ site.time | date_to_xmlschema }}"
+}
