@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Pling</title>
+  <meta name="description" content="Drag note bars, drop a ball, hear melodies bounce." />
+  <link rel="shortcut icon" href="/public/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/public/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/public/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/public/favicon-192x192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/public/favicon-512x512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/public/apple-touch-icon.png" />
+  <meta name="theme-color" content="#11191f" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <canvas id="stage"></canvas>
+
+  <header class="topbar">
+    <div class="group">
+      <label>Root
+        <select id="root">
+          <option>C</option><option>C#</option><option>D</option><option>D#</option>
+          <option>E</option><option>F</option><option>F#</option><option>G</option>
+          <option>G#</option><option>A</option><option>A#</option><option>B</option>
+        </select>
+      </label>
+      <label>Mode
+        <select id="mode">
+          <option value="major">Major</option>
+          <option value="naturalMinor">Natural Minor</option>
+          <option value="harmonicMinor">Harmonic Minor</option>
+          <option value="melodicMinor">Melodic Minor</option>
+          <option value="dorian">Dorian</option>
+          <option value="phrygian">Phrygian</option>
+          <option value="lydian">Lydian</option>
+          <option value="mixolydian">Mixolydian</option>
+          <option value="locrian">Locrian</option>
+        </select>
+      </label>
+    </div>
+    <div class="group">
+      <button id="gravity" title="Toggle gravity">⬇ Gravity</button>
+      <label class="slider-label">Bounce
+        <input id="bounce" type="range" min="0" max="100" value="82" />
+        <span id="bounce-val">82%</span>
+      </label>
+      <label class="slider-label">Reverb
+        <input id="reverb" type="range" min="0" max="100" value="35" />
+        <span id="reverb-val">35%</span>
+      </label>
+      <button id="play" class="primary">▶ Play</button>
+      <button id="reset">↺ Reset</button>
+      <button id="clear">Clear</button>
+    </div>
+  </header>
+
+  <footer class="palette-wrap">
+    <div class="palette-label">Drag a note onto the canvas</div>
+    <div class="palette-row">
+      <div class="octave-ctrl">
+        <button id="oct-down" class="step" title="Lower octave">−</button>
+        <span class="oct-label">Oct <span id="oct-val">4</span></span>
+        <button id="oct-up" class="step" title="Higher octave">+</button>
+      </div>
+      <div class="palette" id="palette" aria-label="Note palette"></div>
+    </div>
+  </footer>
+
+  <div class="hint" id="hint">Drag a note chip below onto the canvas to add a bouncer. Click empty space to place spawn. Press ▶ Play.</div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
