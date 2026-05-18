@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Loud Weather</title>
+  <meta name="description" content="Today's weather, very loudly." />
+  <link rel="shortcut icon" href="/public/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/public/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/public/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/public/favicon-192x192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/public/favicon-512x512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/public/apple-touch-icon.png" />
+  <meta name="theme-color" content="#11191f" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body data-bucket="loading">
+  <button id="spicy-toggle" class="spicy-btn" aria-pressed="true" title="Spicy language">🌶️</button>
+
+  <div class="fx" id="fx" aria-hidden="true"></div>
+
+  <main class="stage">
+    <div class="emoji" id="emoji">🌀</div>
+    <h1 class="phrase" id="phrase">sniffin' the air…</h1>
+  </main>
+
+  <footer class="stats" id="stats">
+    <span id="stats-line">checking the weather…</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

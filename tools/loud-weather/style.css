@@ -1,0 +1,370 @@
+:root {
+  --bg-a: #1b1f24;
+  --bg-b: #0e1115;
+  --fg: #f5f5f5;
+  --muted: rgba(245, 245, 245, 0.6);
+  --accent: #ffcc00;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--fg);
+  background: linear-gradient(160deg, var(--bg-a), var(--bg-b));
+  overflow: hidden;
+  transition: background 0.8s ease;
+}
+
+body[data-bucket="scorching"] {
+  --bg-a: #ff5e3a;
+  --bg-b: #ffb347;
+  --fg: #2a1500;
+}
+
+body[data-bucket="sunny"] {
+  --bg-a: #ffd86b;
+  --bg-b: #ff9a3c;
+  --fg: #2a1f00;
+}
+
+body[data-bucket="cloudy"] {
+  --bg-a: #6c7a89;
+  --bg-b: #3a4956;
+  --fg: #f5f5f5;
+}
+
+body[data-bucket="foggy"] {
+  --bg-a: #b8c0c8;
+  --bg-b: #7c8590;
+  --fg: #20262d;
+}
+
+body[data-bucket="drizzle"] {
+  --bg-a: #4a6572;
+  --bg-b: #263238;
+  --fg: #e8f1f5;
+}
+
+body[data-bucket="rain"] {
+  --bg-a: #1f3a4d;
+  --bg-b: #0a1820;
+  --fg: #d9eaf2;
+}
+
+body[data-bucket="snow"] {
+  --bg-a: #d6e9f5;
+  --bg-b: #8eb4c9;
+  --fg: #102530;
+}
+
+body[data-bucket="storm"] {
+  --bg-a: #2b2240;
+  --bg-b: #0a0518;
+  --fg: #e7e0ff;
+}
+
+body[data-bucket="freezing"] {
+  --bg-a: #9ec9e6;
+  --bg-b: #3d6f8e;
+  --fg: #061a26;
+}
+
+body[data-bucket="night"] {
+  --bg-a: #0b1330;
+  --bg-b: #02050d;
+  --fg: #cfd8ff;
+}
+
+body[data-bucket="error"] {
+  --bg-a: #3a2222;
+  --bg-b: #1a0a0a;
+  --fg: #f5dcdc;
+}
+
+.spicy-btn {
+  position: fixed;
+  top: max(env(safe-area-inset-top), 12px);
+  right: max(env(safe-area-inset-right), 12px);
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  width: 44px;
+  height: 44px;
+  font-size: 22px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: opacity 0.2s, filter 0.2s, transform 0.1s;
+}
+
+.spicy-btn[aria-pressed="false"] {
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+
+.spicy-btn:active {
+  transform: scale(0.92);
+}
+
+.stage {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px 96px;
+  text-align: center;
+}
+
+.emoji {
+  font-size: clamp(110px, 28vw, 260px);
+  line-height: 1;
+  margin-bottom: 18px;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.35));
+  animation: bob 5s ease-in-out infinite;
+}
+
+@keyframes bob {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.phrase {
+  margin: 0;
+  font-weight: 900;
+  font-size: clamp(38px, 9vw, 110px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+  max-width: 18ch;
+  word-wrap: break-word;
+}
+
+.stats {
+  position: fixed;
+  bottom: max(env(safe-area-inset-bottom), 10px);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 0 16px;
+  text-align: center;
+}
+
+.link-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.link-btn:hover {
+  color: var(--fg);
+}
+
+.fx {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Rain / drizzle */
+.drop {
+  position: absolute;
+  top: -10vh;
+  width: 2px;
+  height: 14vh;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.45));
+  animation: fall linear infinite;
+}
+
+body[data-bucket="drizzle"] .drop {
+  height: 6vh;
+  opacity: 0.6;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(120vh);
+  }
+}
+
+/* Snow */
+.flake {
+  position: absolute;
+  top: -5vh;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 18px;
+  animation: drift linear infinite;
+}
+
+@keyframes drift {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  100% {
+    transform: translate(40px, 110vh);
+  }
+}
+
+/* Sun rays */
+.rays {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 180vmax;
+  height: 180vmax;
+  margin-left: -90vmax;
+  margin-top: -90vmax;
+  background: conic-gradient(from 0deg, rgba(255, 255, 255, 0.08) 0deg 6deg, transparent 6deg 24deg);
+  animation: spin 60s linear infinite;
+  opacity: 0.6;
+}
+
+body[data-bucket="scorching"] .rays {
+  background: conic-gradient(from 0deg, rgba(255, 240, 200, 0.18) 0deg 6deg, transparent 6deg 18deg);
+  animation-duration: 30s;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Heat shimmer */
+.shimmer {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0 8px, rgba(255, 255, 255, 0.04) 8px 9px);
+  animation: shimmer 1.6s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateY(-9px);
+  }
+}
+
+/* Fog */
+.fog {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -20%;
+  width: 140%;
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(255, 255, 255, 0.35), transparent 60%),
+    radial-gradient(ellipse at 70% 60%, rgba(255, 255, 255, 0.3), transparent 60%);
+  animation: fog 18s ease-in-out infinite alternate;
+}
+
+@keyframes fog {
+  0% {
+    transform: translateX(-8%);
+  }
+
+  100% {
+    transform: translateX(8%);
+  }
+}
+
+/* Lightning */
+.bolt {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.9);
+  opacity: 0;
+  animation: flash 6s infinite;
+}
+
+@keyframes flash {
+
+  0%,
+  92%,
+  100% {
+    opacity: 0;
+  }
+
+  93%,
+  94% {
+    opacity: 0.85;
+  }
+
+  95% {
+    opacity: 0;
+  }
+
+  96% {
+    opacity: 0.6;
+  }
+
+  97% {
+    opacity: 0;
+  }
+}
+
+/* Stars (night) */
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .emoji,
+  .rays,
+  .shimmer,
+  .fog,
+  .bolt,
+  .drop,
+  .flake,
+  .star {
+    animation: none !important;
+  }
+}

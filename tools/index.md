@@ -15,4 +15,7 @@ Small tools that run entirely in the browser.
   <li>
     <a href="/tools/jobjot/"><strong>JobJot</strong></a> — Fast (unofficial) SES job entry for the field. Capture job number, vehicle, crew, times, type, equipment, and notes; export/import config and jobs as JSON.
   </li>
+  <li>
+    <a href="/tools/loud-weather/"><strong>Loud Weather</strong></a> — Current weather, loud. Mostly useless
+  </li>
 </ul>
