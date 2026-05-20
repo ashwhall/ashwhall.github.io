@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en-GB">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -20,7 +21,7 @@
         const s = JSON.parse(localStorage.getItem('timesheet.v1') || '{}');
         const theme = s.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         document.documentElement.setAttribute('data-theme', theme);
-      } catch (_) {}
+      } catch (_) { }
     })();
   </script>
   <link rel="manifest" href="manifest.json" />
@@ -121,7 +122,7 @@
       min-height: 2.5rem;
     }
 
-    .settings-row + .settings-row {
+    .settings-row+.settings-row {
       border-top: 1px solid var(--pico-muted-border-color);
     }
 
@@ -320,6 +321,46 @@
       box-shadow: none;
     }
 
+    /* Break row */
+    .break-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      font-size: 0.8125rem;
+    }
+
+    .break-row label {
+      color: var(--pico-muted-color);
+      margin: 0;
+    }
+
+    .break-row input[type="number"] {
+      margin: 0;
+      width: 5rem;
+      min-height: 2.25rem;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    .break-row input[type="number"]::-webkit-outer-spin-button,
+    .break-row input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .add-break-btn {
+      margin-top: 0.5rem;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.8125rem;
+      box-shadow: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
     /* Daily notes */
     .day-note-wrap {
       margin-top: 0.625rem;
@@ -461,31 +502,36 @@
     }
   </style>
 </head>
+
 <body>
   <main class="container">
     <header>
       <h1>Timesheet</h1>
       <div class="header-actions">
         <button class="icon-btn" id="settings-toggle" aria-label="Settings" title="Settings">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
         </button>
         <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark/light mode" title="Toggle dark/light mode">
-          <svg id="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/>
-            <line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/>
-            <line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          <svg id="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
           </svg>
-          <svg id="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          <svg id="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
           </svg>
         </button>
       </div>
@@ -494,14 +540,16 @@
     <!-- Week navigation -->
     <div class="week-nav">
       <button class="icon-btn" id="week-prev" aria-label="Previous week" title="Previous week">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="15 18 9 12 15 6"/>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6" />
         </svg>
       </button>
       <span class="week-nav-label" id="week-nav-label"></span>
       <button class="icon-btn" id="week-next" aria-label="Next week" title="Next week">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="9 18 15 12 9 6"/>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6" />
         </svg>
       </button>
     </div>
@@ -551,17 +599,23 @@
     <span class="week-footer-label">Week total</span>
     <div class="footer-actions">
       <button class="secondary outline summary-btn" id="summary-btn" title="Copy detailed summary">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-          <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="8" y1="6" x2="21" y2="6" />
+          <line x1="8" y1="12" x2="21" y2="12" />
+          <line x1="8" y1="18" x2="21" y2="18" />
+          <line x1="3" y1="6" x2="3.01" y2="6" />
+          <line x1="3" y1="12" x2="3.01" y2="12" />
+          <line x1="3" y1="18" x2="3.01" y2="18" />
         </svg>
         Summary
       </button>
       <button class="week-total-btn" id="week-total-btn" title="Copy to clipboard">
         <span id="week-total-display">0:00</span>
-        <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
         </svg>
       </button>
     </div>
@@ -605,6 +659,10 @@
       return DAYS.reduce((acc, d) => ({ ...acc, [d]: '' }), {});
     }
 
+    function defaultBreaks() {
+      return DAYS.reduce((acc, d) => ({ ...acc, [d]: 0 }), {});
+    }
+
     function defaultState() {
       return {
         theme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
@@ -614,6 +672,7 @@
         weekLocked: false,
         days: defaultDays(),
         notes: defaultNotes(),
+        breaks: defaultBreaks(),
       };
     }
 
@@ -629,9 +688,9 @@
             const day = state.days[d];
             const clean = Array.isArray(day)
               ? day.filter(b => b && typeof b === 'object').map(b => ({
-                  start: typeof b.start === 'string' ? b.start : '',
-                  end: typeof b.end === 'string' ? b.end : '',
-                }))
+                start: typeof b.start === 'string' ? b.start : '',
+                end: typeof b.end === 'string' ? b.end : '',
+              }))
               : [];
             state.days[d] = clean.length ? clean : [{ start: '', end: '' }];
           }
@@ -642,6 +701,15 @@
           }
           for (const d of DAYS) {
             if (typeof state.notes[d] !== 'string') state.notes[d] = '';
+          }
+
+          // Sanitize breaks
+          if (!state.breaks || typeof state.breaks !== 'object') {
+            state.breaks = defaultBreaks();
+          }
+          for (const d of DAYS) {
+            const n = Number(state.breaks[d]);
+            state.breaks[d] = Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
           }
 
           if (!DAYS.includes(state.weekdayStart)) {
@@ -656,7 +724,7 @@
           saveState();
           return;
         }
-      } catch (_) {}
+      } catch (_) { }
       state = defaultState();
     }
 
@@ -727,6 +795,13 @@
       }, 0);
     }
 
+    function dayNetMins(dayKey) {
+      const blocks = state.days[dayKey];
+      const gross = dayTotalMins(blocks, overlappingIndices(blocks));
+      const brk = state.breaks[dayKey] || 0;
+      return Math.max(0, gross - brk);
+    }
+
     function activeDays() {
       const startIdx = DAYS.indexOf(state.weekdayStart);
       const ordered = [...DAYS.slice(startIdx), ...DAYS.slice(0, startIdx)];
@@ -734,10 +809,7 @@
     }
 
     function weekTotalMins() {
-      return activeDays().reduce((sum, d) => {
-        const blocks = state.days[d];
-        return sum + dayTotalMins(blocks, overlappingIndices(blocks));
-      }, 0);
+      return activeDays().reduce((sum, d) => sum + dayNetMins(d), 0);
     }
 
     function formatMins(mins) {
@@ -843,23 +915,28 @@
         const overlapping = overlappingIndices(blocks);
         const validBlocks = blocks.filter((b, i) => !overlapping.has(i) && blockMins(b) !== null);
         const note = (state.notes[dayKey] || '').trim();
+        const brk = state.breaks[dayKey] || 0;
         if (validBlocks.length === 0 && !note) return;
 
         const dayDate = new Date(monday);
         dayDate.setDate(monday.getDate() + dayOffset(dayKey));
-        const dateStr = dayDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        const dateStr = dayDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' });
 
         const dayHeader = note
-          ? `${DAY_LABELS[dayKey]} (${dateStr}) - ${note}`
-          : `${DAY_LABELS[dayKey]} (${dateStr})`;
+          ? `${DAY_LABELS[dayKey]} ${dateStr} - ${note}`
+          : `${DAY_LABELS[dayKey]} ${dateStr}`;
 
         if (!firstDay) lines.push('');
         firstDay = false;
 
         lines.push(dayHeader);
         for (const b of validBlocks) {
-          lines.push(`${b.start} - ${b.end} (${formatDuration(blockMins(b))})`);
+          lines.push(`- ${b.start} - ${b.end} (${formatDuration(blockMins(b))})`);
         }
+        if (brk > 0) {
+          lines.push(`- Break        (-${formatDuration(brk)})`);
+        }
+        lines.push(`Day total: ${formatDuration(dayNetMins(dayKey))}`);
       });
 
       lines.push('');
@@ -889,7 +966,7 @@
       activeDays().forEach((dayKey, dayIndex) => {
         const blocks = state.days[dayKey];
         const overlapping = overlappingIndices(blocks);
-        const totalMins = dayTotalMins(blocks, overlapping);
+        const totalMins = dayNetMins(dayKey);
         const totalText = formatMins(totalMins);
         const hasHours = totalMins > 0;
 
@@ -983,6 +1060,64 @@
           }, 0);
         });
         article.appendChild(addBtn);
+
+        // Break
+        const brkMins = state.breaks[dayKey] || 0;
+        if (brkMins > 0) {
+          const breakRow = document.createElement('div');
+          breakRow.className = 'break-row';
+
+          const breakLabel = document.createElement('label');
+          breakLabel.textContent = 'Break (min)';
+          breakLabel.setAttribute('for', `break-${dayKey}`);
+
+          const breakInput = document.createElement('input');
+          breakInput.type = 'number';
+          breakInput.id = `break-${dayKey}`;
+          breakInput.min = '0';
+          breakInput.step = '1';
+          breakInput.inputMode = 'numeric';
+          breakInput.value = String(brkMins);
+          breakInput.setAttribute('aria-label', `${DAY_LABELS[dayKey]} break in minutes`);
+          breakInput.addEventListener('input', () => {
+            const n = Number(breakInput.value);
+            state.breaks[dayKey] = Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+            saveState();
+            const newTotal = formatMins(dayNetMins(dayKey));
+            totalDisplay.textContent = newTotal;
+            totalDisplay.classList.toggle('has-hours', dayNetMins(dayKey) > 0);
+            totalDisplay.classList.toggle('zero', dayNetMins(dayKey) === 0);
+            document.getElementById('week-total-display').textContent = formatMins(weekTotalMins());
+          });
+
+          const removeBreakBtn = document.createElement('button');
+          removeBreakBtn.className = 'secondary outline remove-btn';
+          removeBreakBtn.setAttribute('aria-label', 'Remove break');
+          removeBreakBtn.innerHTML = SVG_X;
+          removeBreakBtn.addEventListener('click', () => {
+            state.breaks[dayKey] = 0;
+            saveState();
+            renderDays();
+          });
+
+          breakRow.appendChild(breakLabel);
+          breakRow.appendChild(breakInput);
+          breakRow.appendChild(removeBreakBtn);
+          article.appendChild(breakRow);
+        } else {
+          const addBreakBtn = document.createElement('button');
+          addBreakBtn.className = 'secondary outline add-break-btn';
+          addBreakBtn.innerHTML = `${SVG_PLUS} Add break`;
+          addBreakBtn.addEventListener('click', () => {
+            state.breaks[dayKey] = 30;
+            saveState();
+            renderDays();
+            setTimeout(() => {
+              document.getElementById(`break-${dayKey}`)?.focus();
+            }, 0);
+          });
+          article.appendChild(addBreakBtn);
+        }
 
         // Notes
         const noteWrap = document.createElement('div');
@@ -1096,6 +1231,7 @@
       if (!confirm('Clear all entries and start a new week?')) return;
       state.days = defaultDays();
       state.notes = defaultNotes();
+      state.breaks = defaultBreaks();
       state.weekLocked = false;
       state.weekStart = toDateStr(getWeekStartDate(state.weekdayStart));
       saveState();
@@ -1137,7 +1273,7 @@
           year: 'numeric', month: 'short', day: 'numeric',
           hour: '2-digit', minute: '2-digit', hour12: false,
         });
-      } catch (_) {}
+      } catch (_) { }
     })();
 
     // Install banner — Android prompt event, iOS Share hint, generic fallback.
@@ -1177,7 +1313,7 @@
     bannerInstall.addEventListener('click', async () => {
       if (!deferredInstallPrompt) return;
       deferredInstallPrompt.prompt();
-      try { await deferredInstallPrompt.userChoice; } catch (_) {}
+      try { await deferredInstallPrompt.userChoice; } catch (_) { }
       deferredInstallPrompt = null;
       banner.hidden = true;
     });
@@ -1203,7 +1339,7 @@
       if (!navigator.storage?.persist) return;
       if (state.persistAsked) return;
       let already = false;
-      try { already = await navigator.storage.persisted(); } catch (_) {}
+      try { already = await navigator.storage.persisted(); } catch (_) { }
       if (already) {
         state.persistAsked = true;
         saveState();
@@ -1215,7 +1351,7 @@
       state.persistAsked = true;
       saveState();
       if (!ok) return;
-      try { await navigator.storage.persist(); } catch (_) {}
+      try { await navigator.storage.persist(); } catch (_) { }
     }
     setTimeout(() => { maybeRequestPersistence(); }, 600);
 
@@ -1235,9 +1371,9 @@
           trackInstall(reg.installing);
           reg.addEventListener('updatefound', () => trackInstall(reg.installing));
 
-          reg.update().catch(() => {});
-          window.addEventListener('focus', () => reg.update().catch(() => {}));
-        }).catch(() => {});
+          reg.update().catch(() => { });
+          window.addEventListener('focus', () => reg.update().catch(() => { }));
+        }).catch(() => { });
       });
       let reloadedForSW = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -1248,4 +1384,5 @@
     }
   </script>
 </body>
+
 </html>
