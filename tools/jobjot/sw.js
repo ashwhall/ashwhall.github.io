@@ -42,12 +42,23 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
 
-  const isNav = req.mode === 'navigate' || req.destination === 'document';
+  const sameOrigin = new URL(req.url).origin === location.origin;
 
-  if (isNav) {
-    // Network-first for HTML so deployed updates land on the next online visit.
+  // App shell = our own HTML/JS/CSS. Served network-first so a deploy lands on
+  // the next online load, not after the service worker swaps itself. Cache is
+  // the offline fallback only.
+  const isShell =
+    sameOrigin &&
+    (req.mode === 'navigate' ||
+      req.destination === 'document' ||
+      req.destination === 'script' ||
+      req.destination === 'style');
+
+  if (isShell) {
     event.respondWith(
-      fetch(req)
+      // `no-cache` forces revalidation (ETag), so GitHub Pages' HTTP cache
+      // can't hand back a stale asset behind our back.
+      fetch(req, { cache: 'no-cache' })
         .then((res) => {
           if (res.ok) {
             const clone = res.clone();
@@ -55,19 +66,22 @@ self.addEventListener('fetch', (event) => {
           }
           return res;
         })
-        .catch(() => caches.match(req).then((c) => c || caches.match('./index.html')))
+        .catch(() =>
+          caches.match(req).then((c) => c || caches.match('./index.html')),
+        ),
     );
     return;
   }
 
-  // Cache-first for static assets.
+  // Cache-first for everything else (icons, fonts, third-party) — rarely
+  // changes, and speed/offline matter more than instant freshness.
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
       return fetch(req)
         .then((res) => {
           // Opportunistically cache same-origin assets we didn't pre-list.
-          if (res.ok && new URL(req.url).origin === location.origin) {
+          if (res.ok && sameOrigin) {
             const clone = res.clone();
             caches.open(CACHE_VERSION).then((cache) => cache.put(req, clone));
           }
