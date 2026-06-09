@@ -1161,25 +1161,32 @@ function timeRow({
   row.appendChild(lab);
 
   if (readOnly) {
+    // No value yet: a placeholder field pointing the user to where the value
+    // actually comes from, rather than a bare disabled "--:--".
+    if (!value) {
+      const ph = document.createElement('div');
+      ph.className = 'time-readonly-empty';
+      ph.textContent = 'Set on a vehicle';
+      row.appendChild(ph);
+      return row;
+    }
     // Same time field as the editable rows, but disabled — looks identical to
     // Job paged, just not interactive (no value, no Now/Clear button). The
-    // source vehicle, when known, rides as a pill on the right of the field.
-    const cell = document.createElement('div');
-    cell.className = 'time-readonly-cell';
+    // source vehicle sits as a pill in the action column, where the Now/Clear
+    // button would be on an editable row.
     const input = document.createElement('input');
     input.type = 'time';
     if (id) input.id = id;
-    input.value = value || '';
+    input.value = value;
     input.disabled = true;
     input.className = 'time-readonly-input';
-    cell.appendChild(input);
+    row.appendChild(input);
     if (suffix) {
       const badge = document.createElement('span');
       badge.className = 'time-veh-badge';
       badge.textContent = suffix;
-      cell.appendChild(badge);
+      row.appendChild(badge);
     }
-    row.appendChild(cell);
     return row;
   }
 

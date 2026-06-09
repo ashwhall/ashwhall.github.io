@@ -367,14 +367,7 @@ header h1 {
    time). A disabled time input styled to look identical to the editable
    fields, so it lines up in the same grid column and reads as a normal field
    that simply can't be changed. */
-.time-readonly-cell {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
 .time-row input[type='time'].time-readonly-input {
-  width: 100%;
   opacity: 1;
   cursor: default;
   color: var(--pico-color);
@@ -383,23 +376,34 @@ header h1 {
   border-color: var(--pico-form-element-border-color);
 }
 
-/* Source vehicle pill, sitting on the right of an inferred time field. */
+/* Empty inferred field: looks like the time field, but holds muted hint text
+   pointing to where the value is actually entered. */
+.time-readonly-empty {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--pico-form-element-border-color);
+  border-radius: var(--pico-border-radius);
+  background: var(--pico-form-element-background-color);
+  color: var(--pico-muted-color);
+  font-size: 0.8125rem;
+  font-style: italic;
+}
+
+/* Source vehicle pill, in the action column under the Now/Clear button. */
 .time-veh-badge {
-  position: absolute;
-  right: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  max-width: 60%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.65rem;
+  align-self: center;
+  justify-self: stretch;
+  text-align: center;
+  overflow-wrap: anywhere;
+  font-size: 0.6rem;
   font-weight: 700;
+  line-height: 1.15;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.1rem 0.45rem;
-  border-radius: 2rem;
+  letter-spacing: 0.03em;
+  padding: 0.2rem 0.3rem;
+  border-radius: 0.5rem;
   background: color-mix(in srgb, var(--pico-primary) 18%, transparent);
   color: var(--pico-primary);
 }
