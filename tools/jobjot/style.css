@@ -354,6 +354,56 @@ header h1 {
   display: none;
 }
 
+.time-duration .dur-label {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  font-size: 0.7rem;
+  margin-right: 0.3rem;
+  color: var(--pico-primary);
+}
+
+/* Read-only timeline field (derived globals; each vehicle's mirrored paged
+   time). A disabled time input styled to look identical to the editable
+   fields, so it lines up in the same grid column and reads as a normal field
+   that simply can't be changed. */
+.time-readonly-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.time-row input[type='time'].time-readonly-input {
+  width: 100%;
+  opacity: 1;
+  cursor: default;
+  color: var(--pico-color);
+  -webkit-text-fill-color: var(--pico-color);
+  background: var(--pico-form-element-background-color);
+  border-color: var(--pico-form-element-border-color);
+}
+
+/* Source vehicle pill, sitting on the right of an inferred time field. */
+.time-veh-badge {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.45rem;
+  border-radius: 2rem;
+  background: color-mix(in srgb, var(--pico-primary) 18%, transparent);
+  color: var(--pico-primary);
+}
+
 .modal-check-hint {
   margin-left: auto;
   color: var(--pico-muted-color);
@@ -476,6 +526,7 @@ header h1 {
   font-size: 0.875rem;
   color: var(--pico-muted-color);
   margin: 0 0 0.875rem;
+  white-space: pre-line;
 }
 
 .modal-check-row {
@@ -563,6 +614,26 @@ header h1 {
 .add-crew-inline {
   width: 100%;
   margin-top: 0.25rem;
+}
+
+/* Per-vehicle timeline, beneath the crew block inside a vehicle card. */
+.vehicle-times {
+  padding: 0.625rem 0.75rem 0.75rem;
+  border-top: 1px solid var(--pico-muted-border-color);
+}
+
+.vehicle-times::before {
+  content: 'Times';
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pico-muted-color);
+  margin-bottom: 0.4rem;
+}
+
+.vehicle-times .time-row:last-child {
+  margin-bottom: 0;
 }
 
 .section-add-btn {

@@ -25,6 +25,10 @@ const ADD_NEW_SENTINEL = '__add_new__';
 let config;
 let jobs;
 let editingJobId = null;
+// Counts jobs whose pre-per-vehicle global times were migrated onto their
+// first vehicle during the most recent sanitize pass (load or import). Used to
+// surface a one-time explanatory dialog. Reset before each batch.
+let migratedJobCount = 0;
 // Job created via "New job" but not yet persisted. Lives only in memory until
 // the user touches a field; saveJobs() promotes it into the `jobs` array.
 let pendingJob = null;
@@ -61,21 +65,39 @@ function sanitizeConfig(c) {
   return out;
 }
 
+function blankTimes() {
+  return { enroute: '', onScene: '', jobClear: '', inStation: '' };
+}
+
+function sanitizeTimes(t) {
+  const base = blankTimes();
+  if (!t || typeof t !== 'object') return base;
+  for (const k of Object.keys(base)) {
+    if (typeof t[k] === 'string') base[k] = t[k];
+  }
+  return base;
+}
+
 function sanitizeJob(j) {
   if (!j || typeof j !== 'object') return null;
+  // Legacy (pre per-vehicle) jobs carried a single job-level `times`. If the
+  // first vehicle has no times of its own, that global set is migrated onto it
+  // (see sanitizeVehicles) and we flag it so the user can be told.
+  const legacy = j.times && typeof j.times === 'object' ? j.times : null;
+  const legacyHasValue =
+    legacy &&
+    (legacy.enroute || legacy.onScene || legacy.jobClear || legacy.inStation);
+  const firstVehHasOwnTimes =
+    Array.isArray(j.vehicles) && j.vehicles[0] && j.vehicles[0].times;
+  if (legacyHasValue && !firstVehHasOwnTimes) migratedJobCount++;
   return {
     id: typeof j.id === 'string' ? j.id : genId(),
     createdAt: typeof j.createdAt === 'number' ? j.createdAt : Date.now(),
     updatedAt: typeof j.updatedAt === 'number' ? j.updatedAt : Date.now(),
     jobNumber: typeof j.jobNumber === 'string' ? j.jobNumber : '',
     description: typeof j.description === 'string' ? j.description : '',
-    vehicles: sanitizeVehicles(j),
-    times: {
-      enroute: j.times?.enroute || '',
-      onScene: j.times?.onScene || '',
-      jobClear: j.times?.jobClear || '',
-      inStation: j.times?.inStation || '',
-    },
+    jobPaged: typeof j.jobPaged === 'string' ? j.jobPaged : '',
+    vehicles: sanitizeVehicles(j, legacyHasValue ? legacy : null),
     jobType: typeof j.jobType === 'string' ? j.jobType : '',
     notes: typeof j.notes === 'string' ? j.notes : '',
     equipment: Array.isArray(j.equipment)
@@ -90,11 +112,14 @@ function sanitizeJob(j) {
   };
 }
 
-function sanitizeVehicles(j) {
+// `legacyTimes` (when supplied) is the old job-level times block. It is applied
+// to the FIRST vehicle only, and only when that vehicle has no times of its own
+// — the best-effort migration path. Other vehicles start blank.
+function sanitizeVehicles(j, legacyTimes) {
   if (!Array.isArray(j.vehicles)) return [];
   return j.vehicles
     .filter((v) => v && typeof v === 'object')
-    .map((v) => ({
+    .map((v, i) => ({
       vehicle: typeof v.vehicle === 'string' ? v.vehicle : '',
       crew: Array.isArray(v.crew)
         ? v.crew
@@ -104,6 +129,7 @@ function sanitizeVehicles(j) {
               role: typeof c.role === 'string' ? c.role : '',
             }))
         : [],
+      times: sanitizeTimes(v.times || (i === 0 ? legacyTimes : null)),
     }));
 }
 
@@ -125,6 +151,7 @@ function saveConfig() {
 }
 
 function loadJobs() {
+  migratedJobCount = 0;
   try {
     const raw = localStorage.getItem(JOBS_KEY);
     const arr = raw ? JSON.parse(raw) : [];
@@ -171,8 +198,8 @@ function blankJob() {
     updatedAt: now,
     jobNumber: '',
     description: '',
+    jobPaged: '',
     vehicles: [],
-    times: { enroute: '', onScene: '', jobClear: '', inStation: '' },
     jobType: '',
     notes: '',
     equipment: [],
@@ -576,44 +603,27 @@ function fmtDurationHr(mins) {
 // `ts` is the canonical timestamp for sort + today badge. `live` = true when
 // the line uses "now", so the list should refresh on a tick.
 function listLineFor(job) {
-  const offsets = computeDayOffsets(job);
-  const baseDay = new Date(job.createdAt);
-  baseDay.setHours(0, 0, 0, 0);
-  const baseMs = baseDay.getTime();
+  const baseMs = baseDayMs(job);
   const MIN_MS = 60_000;
 
-  const tsFor = (key) => {
-    const v = job.times[key];
-    if (!v) return null;
-    const [h, m] = v.split(':').map(Number);
-    return baseMs + (offsets[key] * 1440 + h * 60 + m) * MIN_MS;
-  };
+  // Span across the whole turnout: earliest start, latest finish.
+  const start = firstAcross(job, 'enroute') || firstAcross(job, 'onScene');
+  const end = lastAcross(job, 'inStation') || lastAcross(job, 'jobClear');
 
-  const startKey = job.times.enroute
-    ? 'enroute'
-    : job.times.onScene
-      ? 'onScene'
-      : null;
-  const endKey = job.times.inStation
-    ? 'inStation'
-    : job.times.jobClear
-      ? 'jobClear'
-      : null;
-
-  if (!startKey && !endKey) {
+  if (!start && !end) {
     return { text: fmtDate(job.createdAt), ts: job.createdAt };
   }
-  if (startKey && endKey) {
-    const a = tsFor(startKey);
-    const b = tsFor(endKey);
+  if (start && end) {
+    const a = baseMs + start.mins * MIN_MS;
+    const b = baseMs + end.mins * MIN_MS;
     const dur = fmtDurationHr(Math.round((b - a) / MIN_MS));
     return {
       text: `${fmtDateOnly(a)}, ${fmtClock24(a)} – ${fmtClock24(b)} (${dur})`,
       ts: a,
     };
   }
-  if (startKey && !endKey) {
-    const a = tsFor(startKey);
+  if (start && !end) {
+    const a = baseMs + start.mins * MIN_MS;
     const dur = fmtDurationHr(Math.round((Date.now() - a) / MIN_MS));
     return {
       text: `${fmtDateOnly(a)}, ${fmtClock24(a)} – now (${dur})`,
@@ -621,7 +631,7 @@ function listLineFor(job) {
       live: true,
     };
   }
-  const b = tsFor(endKey);
+  const b = baseMs + end.mins * MIN_MS;
   return { text: `${fmtDateOnly(b)}, ${fmtClock24(b)}`, ts: b };
 }
 
@@ -639,37 +649,38 @@ function isToday(ts) {
 
 function isJobComplete(j) {
   if (!j.jobNumber || !j.jobType) return false;
+  if (!j.jobPaged) return false;
   if (j.vehicles.length === 0) return false;
-  if (j.vehicles.some((v) => !v.vehicle || v.crew.length === 0)) return false;
-  if (
-    !j.times.enroute ||
-    !j.times.onScene ||
-    !j.times.jobClear ||
-    !j.times.inStation
-  )
-    return false;
+  for (const v of j.vehicles) {
+    if (!v.vehicle || v.crew.length === 0) return false;
+    if (
+      !v.times.enroute ||
+      !v.times.onScene ||
+      !v.times.jobClear ||
+      !v.times.inStation
+    )
+      return false;
+  }
   return true;
 }
 
 function listDateFor(job) {
-  // Sort key matches what listLineFor uses for the visible start time:
-  // prefer enroute, fall back to onScene, then to creation.
-  const pick = job.times.enroute || job.times.onScene;
-  if (pick) {
-    const [h, m] = pick.split(':').map(Number);
-    const base = new Date(job.createdAt);
-    base.setHours(h, m, 0, 0);
-    return base.getTime();
-  }
+  // Sort key matches the visible start time in listLineFor: earliest enroute,
+  // falling back to earliest on-scene, then to creation.
+  const pick = firstAcross(job, 'enroute') || firstAcross(job, 'onScene');
+  if (pick) return baseDayMs(job) + pick.mins * 60_000;
   return job.createdAt;
 }
 
 function applyListFilter(list) {
   switch (config.listFilter) {
     case 'in-progress':
-      // Started but not closed out: any start time set, no inStation yet.
+      // Started but not closed out: a vehicle is enroute/on scene, and not
+      // every vehicle is back in station yet.
       return list.filter(
-        (j) => (j.times.enroute || j.times.onScene) && !j.times.inStation,
+        (j) =>
+          (anyVehicleTime(j, 'enroute') || anyVehicleTime(j, 'onScene')) &&
+          !allVehiclesHave(j, 'inStation'),
       );
     case 'incomplete':
       return list.filter((j) => !isJobComplete(j));
@@ -845,7 +856,15 @@ function _renderEditViewInner() {
   setWarnIcon(
     document.getElementById('label-vehicles'),
     job.vehicles.length === 0 ||
-      job.vehicles.some((v) => !v.vehicle || v.crew.length === 0),
+      job.vehicles.some(
+        (v) =>
+          !v.vehicle ||
+          v.crew.length === 0 ||
+          !v.times.enroute ||
+          !v.times.onScene ||
+          !v.times.jobClear ||
+          !v.times.inStation,
+      ),
   );
 
   document.getElementById('edit-title').textContent = job.jobNumber
@@ -873,11 +892,11 @@ function _renderEditViewInner() {
     saveJobs();
   };
 
-  // Vehicles (each contains nested crew)
-  renderVehicles(job);
+  // Times: global paged anchor + figures derived across vehicles.
+  renderGlobalTimes(job);
 
-  // Times (with now/clear button per field)
-  renderTimes(job);
+  // Vehicles (each contains nested crew and its own timeline)
+  renderVehicles(job);
 
   // Job type
   const typeEl = document.getElementById('f-jobType');
@@ -978,25 +997,37 @@ function setWarnIcon(el, missing) {
   }
 }
 
-const TIME_FIELDS = [
+// Job paged is the shared anchor; each vehicle then owns its own four times.
+// A vehicle's effective timeline is { jobPaged, ...vehicle.times } walked in
+// this sequence so day-rollover is measured from when the job was paged.
+const PAGED_FIELD = { key: 'jobPaged', label: 'Job paged' };
+const VEHICLE_TIME_FIELDS = [
   { key: 'enroute', label: 'Enroute' },
   { key: 'onScene', label: 'On scene' },
   { key: 'jobClear', label: 'Job clear' },
   { key: 'inStation', label: 'In station' },
 ];
+const SEQUENCE_FIELDS = [PAGED_FIELD, ...VEHICLE_TIME_FIELDS];
 
 function currentTimeHHMM() {
   const d = new Date();
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
-function computeDayOffsets(job) {
-  // Walk fields in order; each time that wraps below the previous bumps day.
+// Combined timeline (paged anchor + a vehicle's own times) used for day-offset
+// and duration maths. jobPaged is shared across all vehicles in the job.
+function vehicleTimeline(job, vehicle) {
+  return { jobPaged: job.jobPaged, ...vehicle.times };
+}
+
+// Walk `fields` in order over a plain times object; each time that wraps below
+// the previous bumps the day. Returns offsets keyed by field key.
+function computeDayOffsets(times, fields = SEQUENCE_FIELDS) {
   const offsets = {};
   let dayOffset = 0;
   let prevMins = null;
-  for (const f of TIME_FIELDS) {
-    const v = job.times[f.key];
+  for (const f of fields) {
+    const v = times[f.key];
     if (!v) {
       offsets[f.key] = dayOffset;
       continue;
@@ -1010,11 +1041,48 @@ function computeDayOffsets(job) {
   return offsets;
 }
 
-function totalMinutes(job, key, offsets) {
-  const v = job.times[key];
+function totalMinutes(times, key, offsets) {
+  const v = times[key];
   if (!v) return null;
   const [h, m] = v.split(':').map(Number);
   return offsets[key] * 1440 + h * 60 + m;
+}
+
+// Earliest / latest value of `key` across all vehicles, measured in minutes
+// from the job's paged-day baseline. Returns { mins, time, vehicle } or null.
+function pickAcrossVehicles(job, key, want) {
+  let best = null;
+  for (const v of job.vehicles) {
+    if (!v.times[key]) continue;
+    const tl = vehicleTimeline(job, v);
+    const mins = totalMinutes(tl, key, computeDayOffsets(tl));
+    if (
+      best === null ||
+      (want === 'first' ? mins < best.mins : mins > best.mins)
+    ) {
+      best = { mins, time: v.times[key], vehicle: v.vehicle };
+    }
+  }
+  return best;
+}
+
+const firstAcross = (job, key) => pickAcrossVehicles(job, key, 'first');
+const lastAcross = (job, key) => pickAcrossVehicles(job, key, 'last');
+
+function anyVehicleTime(job, key) {
+  return job.vehicles.some((v) => v.times[key]);
+}
+
+function allVehiclesHave(job, key) {
+  return job.vehicles.length > 0 && job.vehicles.every((v) => v.times[key]);
+}
+
+// Midnight of the job's creation day — the baseline for list timestamps, which
+// add a value's offset-aware minutes onto it.
+function baseDayMs(job) {
+  const d = new Date(job.createdAt);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
 }
 
 function fmtDuration(mins) {
@@ -1026,93 +1094,251 @@ function fmtDuration(mins) {
   return `${m}m`;
 }
 
-function renderTimes(job) {
-  const wrap = document.getElementById('times-container');
-  wrap.innerHTML = '';
-  const offsets = computeDayOffsets(job);
-  TIME_FIELDS.forEach((f, idx) => {
-    const row = document.createElement('div');
-    row.className = 'time-row';
+// Persist a time edit and refresh the whole edit view. A vehicle's time change
+// can move the job-level "first enroute / on scene" figures, so a targeted
+// re-render isn't enough — renderEditView() rebuilds both and restores scroll.
+function commitTimeChange() {
+  const job = getJob(editingJobId);
+  if (job) job.updatedAt = Date.now();
+  saveJobs();
+  renderEditView();
+}
 
-    const label = document.createElement('label');
-    label.className = 'time-label';
-    label.htmlFor = `f-time-${f.key}`;
-    label.textContent = f.label;
-    if (!job.times[f.key]) {
-      setWarnIcon(label, true);
-    }
-    const off = offsets[f.key];
-    if (job.times[f.key] && off > 0) {
-      const tag = document.createElement('span');
-      tag.className = 'day-tag';
-      tag.textContent = `+${off}d`;
-      label.appendChild(tag);
-    }
+// Editable-time button/input handlers for a single field. `setVal` writes the
+// new value into the model; the caller owns where that lives.
+function timeFieldHandlers(setVal, label) {
+  return {
+    onInput: (val) => {
+      setVal(val);
+      commitTimeChange();
+    },
+    onNow: () => {
+      setVal(currentTimeHHMM());
+      commitTimeChange();
+    },
+    onClear: async () => {
+      const ok = await showConfirm(`Clear the "${label}" time?`, {
+        title: 'Clear time',
+        confirmLabel: 'Clear',
+        danger: true,
+      });
+      if (!ok) return;
+      setVal('');
+      commitTimeChange();
+    },
+  };
+}
 
+// One timeline row. Editable rows get a time input + Now/Clear button; read-only
+// rows (the global derived figures, and each vehicle's mirrored paged time) show
+// a static value. `suffix` annotates which vehicle a derived value came from.
+function timeRow({
+  id,
+  label,
+  suffix,
+  value,
+  readOnly,
+  missing,
+  dayOffset,
+  onInput,
+  onNow,
+  onClear,
+}) {
+  const row = document.createElement('div');
+  row.className = 'time-row';
+
+  const lab = document.createElement('label');
+  lab.className = 'time-label';
+  if (id && !readOnly) lab.htmlFor = id;
+  lab.textContent = label;
+  if (missing) setWarnIcon(lab, true);
+  if (value && dayOffset > 0) {
+    const tag = document.createElement('span');
+    tag.className = 'day-tag';
+    tag.textContent = `+${dayOffset}d`;
+    lab.appendChild(tag);
+  }
+  row.appendChild(lab);
+
+  if (readOnly) {
+    // Same time field as the editable rows, but disabled — looks identical to
+    // Job paged, just not interactive (no value, no Now/Clear button). The
+    // source vehicle, when known, rides as a pill on the right of the field.
+    const cell = document.createElement('div');
+    cell.className = 'time-readonly-cell';
     const input = document.createElement('input');
     input.type = 'time';
-    input.id = `f-time-${f.key}`;
-    input.value = job.times[f.key] || '';
-    input.onchange = () => {
-      job.times[f.key] = input.value;
-      job.updatedAt = Date.now();
-      saveJobs();
-      renderTimes(job);
-    };
-
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'time-action-btn';
-    const hasValue = !!job.times[f.key];
-    if (hasValue) {
-      btn.classList.add('clear');
-      btn.setAttribute('aria-label', `Clear ${f.label}`);
-      btn.innerHTML = SVG_X_SMALL;
-      btn.onclick = async () => {
-        const ok = await showConfirm(`Clear the "${f.label}" time?`, {
-          title: 'Clear time',
-          confirmLabel: 'Clear',
-          danger: true,
-        });
-        if (!ok) return;
-        job.times[f.key] = '';
-        job.updatedAt = Date.now();
-        saveJobs();
-        renderTimes(job);
-      };
-    } else {
-      btn.classList.add('now');
-      btn.textContent = 'Now';
-      btn.setAttribute('aria-label', `Set ${f.label} to now`);
-      btn.onclick = () => {
-        job.times[f.key] = currentTimeHHMM();
-        job.updatedAt = Date.now();
-        saveJobs();
-        renderTimes(job);
-      };
+    if (id) input.id = id;
+    input.value = value || '';
+    input.disabled = true;
+    input.className = 'time-readonly-input';
+    cell.appendChild(input);
+    if (suffix) {
+      const badge = document.createElement('span');
+      badge.className = 'time-veh-badge';
+      badge.textContent = suffix;
+      cell.appendChild(badge);
     }
+    row.appendChild(cell);
+    return row;
+  }
 
-    row.appendChild(label);
-    row.appendChild(input);
-    row.appendChild(btn);
-    wrap.appendChild(row);
+  const input = document.createElement('input');
+  input.type = 'time';
+  if (id) input.id = id;
+  input.value = value || '';
+  input.onchange = () => onInput(input.value);
+  row.appendChild(input);
 
-    // Duration between this row and the next, when both times are set.
-    const next = TIME_FIELDS[idx + 1];
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'time-action-btn';
+  if (value) {
+    btn.classList.add('clear');
+    btn.setAttribute('aria-label', `Clear ${label}`);
+    btn.innerHTML = SVG_X_SMALL;
+    btn.onclick = onClear;
+  } else {
+    btn.classList.add('now');
+    btn.textContent = 'Now';
+    btn.setAttribute('aria-label', `Set ${label} to now`);
+    btn.onclick = onNow;
+  }
+  row.appendChild(btn);
+  return row;
+}
+
+// Duration shown between two timeline rows. Hidden when not computable. A
+// `label` (e.g. "Turn out") marks a named gap rather than a bare figure.
+function durationRow(mins, label) {
+  const div = document.createElement('div');
+  div.className = 'time-duration';
+  if (mins === null || mins < 0) {
+    div.classList.add('empty');
+    return div;
+  }
+  if (label) {
+    const l = document.createElement('span');
+    l.className = 'dur-label';
+    l.textContent = label;
+    div.appendChild(l);
+    div.appendChild(document.createTextNode(` ${fmtDuration(mins)}`));
+  } else {
+    div.textContent = fmtDuration(mins);
+  }
+  return div;
+}
+
+// Global Times section: the paged anchor (editable) plus read-only figures
+// derived across vehicles. Job clear / in station are intentionally omitted
+// here — they belong to individual vehicles.
+function renderGlobalTimes(job) {
+  const wrap = document.getElementById('times-container');
+  wrap.innerHTML = '';
+
+  wrap.appendChild(
+    timeRow({
+      id: 'f-time-jobPaged',
+      label: PAGED_FIELD.label,
+      value: job.jobPaged,
+      missing: !job.jobPaged,
+      ...timeFieldHandlers((val) => {
+        job.jobPaged = val;
+      }, PAGED_FIELD.label),
+    }),
+  );
+
+  const firstEnroute = firstAcross(job, 'enroute');
+  const firstScene = firstAcross(job, 'onScene');
+
+  // Turn out: paged → first enroute.
+  const pagedMins = job.jobPaged
+    ? totalMinutes({ jobPaged: job.jobPaged }, 'jobPaged', { jobPaged: 0 })
+    : null;
+  wrap.appendChild(
+    durationRow(
+      pagedMins !== null && firstEnroute ? firstEnroute.mins - pagedMins : null,
+      'Turn out',
+    ),
+  );
+
+  wrap.appendChild(
+    timeRow({
+      label: 'First enroute',
+      suffix: firstEnroute?.vehicle || '',
+      value: firstEnroute?.time || '',
+      readOnly: true,
+    }),
+  );
+
+  wrap.appendChild(
+    durationRow(
+      firstEnroute && firstScene ? firstScene.mins - firstEnroute.mins : null,
+    ),
+  );
+
+  wrap.appendChild(
+    timeRow({
+      label: 'First on scene',
+      suffix: firstScene?.vehicle || '',
+      value: firstScene?.time || '',
+      readOnly: true,
+    }),
+  );
+}
+
+// Per-vehicle timeline, rendered inside the vehicle's card: a read-only mirror
+// of the job's paged time, the vehicle's turn out, then its own four times.
+function renderVehicleTimes(job, vIdx) {
+  const v = job.vehicles[vIdx];
+  const wrap = document.createElement('div');
+  wrap.className = 'vehicle-times';
+
+  const tl = vehicleTimeline(job, v);
+  const offsets = computeDayOffsets(tl);
+
+  wrap.appendChild(
+    timeRow({
+      label: PAGED_FIELD.label,
+      value: job.jobPaged,
+      readOnly: true,
+      dayOffset: offsets.jobPaged,
+    }),
+  );
+
+  const pagedMins = totalMinutes(tl, 'jobPaged', offsets);
+  const enrouteMins = totalMinutes(tl, 'enroute', offsets);
+  wrap.appendChild(
+    durationRow(
+      pagedMins !== null && enrouteMins !== null
+        ? enrouteMins - pagedMins
+        : null,
+      'Turn out',
+    ),
+  );
+
+  VEHICLE_TIME_FIELDS.forEach((f, idx) => {
+    wrap.appendChild(
+      timeRow({
+        id: `f-time-${vIdx}-${f.key}`,
+        label: f.label,
+        value: v.times[f.key],
+        missing: !v.times[f.key],
+        dayOffset: offsets[f.key],
+        ...timeFieldHandlers((val) => {
+          v.times[f.key] = val;
+        }, f.label),
+      }),
+    );
+    const next = VEHICLE_TIME_FIELDS[idx + 1];
     if (next) {
-      const a = totalMinutes(job, f.key, offsets);
-      const b = totalMinutes(job, next.key, offsets);
-      const duration = document.createElement('div');
-      duration.className = 'time-duration';
-      if (a !== null && b !== null && b >= a) {
-        duration.textContent = fmtDuration(b - a);
-      } else {
-        duration.textContent = '';
-        duration.classList.add('empty');
-      }
-      wrap.appendChild(duration);
+      const a = totalMinutes(tl, f.key, offsets);
+      const b = totalMinutes(tl, next.key, offsets);
+      wrap.appendChild(durationRow(a !== null && b !== null ? b - a : null));
     }
   });
+
+  return wrap;
 }
 
 function renderVehicles(job) {
@@ -1260,6 +1486,14 @@ function renderVehicles(job) {
     crewWrap.appendChild(addCrewBtn);
 
     block.appendChild(crewWrap);
+
+    // Timeline only once the vehicle is named — an unfilled row would just
+    // show four "required" warnings before there's a vehicle to attribute
+    // them to.
+    if (v.vehicle) {
+      block.appendChild(renderVehicleTimes(job, vIdx));
+    }
+
     wrap.appendChild(block);
   });
 }
@@ -1330,6 +1564,7 @@ document
     const cloned = indices.map((i) => ({
       vehicle: src.vehicles[i].vehicle,
       crew: src.vehicles[i].crew.map((c) => ({ ...c })),
+      times: blankTimes(),
     }));
     const next = blankJob();
     next.vehicles = cloned;
@@ -1348,7 +1583,7 @@ document.getElementById('add-vehicle-btn').addEventListener('click', () => {
   if (job.vehicles.some((v) => !v.vehicle)) return; // unfinished row exists
   // No saveJobs here: the row has no value yet, so pruneEmptyRowsInPlace
   // would wipe it. It persists once the user fills the dropdown.
-  job.vehicles.push({ vehicle: '', crew: [] });
+  job.vehicles.push({ vehicle: '', crew: [], times: blankTimes() });
   renderEditView();
 });
 
@@ -1679,7 +1914,9 @@ document
     if (!mode) return;
 
     const rawCount = payload.length;
+    migratedJobCount = 0;
     const imported = payload.map(sanitizeJob).filter(Boolean);
+    const migratedHere = migratedJobCount;
     const dropped = rawCount - imported.length;
     const missingNumber = imported.filter((j) => !j.jobNumber).length;
 
@@ -1701,6 +1938,7 @@ document
     if (dropped > 0) lines.push(`${dropped} skipped (unreadable).`);
     if (missingNumber > 0) lines.push(`${missingNumber} missing a job number.`);
     await showAlert(lines.join(' '), { title: 'Import complete' });
+    if (migratedHere > 0) await showMigrationNotice(migratedHere);
   });
 
 document
@@ -1777,8 +2015,24 @@ filterEl.addEventListener('change', () => {
 renderList();
 showView('list');
 
+// One-time notice when legacy job-level times were migrated onto first
+// vehicles. We can't know they belong there, and any per-vehicle times the
+// user kept in notes must now be re-entered by hand — so spell that out.
+function showMigrationNotice(count) {
+  const n = `${count} existing job${count === 1 ? '' : 's'}`;
+  return showAlert(
+    `JobJot now records call times for each vehicle separately, rather than one set of times per job.\n\n` +
+      `For ${n}, the old times have been moved onto the first vehicle. We can't be sure those times belong to that vehicle, so please open each job and check them.\n\n` +
+      `If you recorded other vehicles' times elsewhere (for example in the job's notes), you'll need to enter them on each vehicle by hand now.`,
+    { title: 'Times moved to first vehicle' },
+  );
+}
+
 // Fire after initial paint so the user sees the app before any modal.
-setTimeout(() => { maybeRequestPersistence(); }, 600);
+setTimeout(async () => {
+  if (migratedJobCount > 0) await showMigrationNotice(migratedJobCount);
+  maybeRequestPersistence();
+}, 600);
 
 // ─── Install hint / persistent storage ──────────────────────────────────
 
