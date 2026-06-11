@@ -554,12 +554,20 @@ function showChoice(message, choices, { title = '' } = {}) {
 // ─── Toast ──────────────────────────────────────────────────────────────
 
 let toastTimer;
-function showToast(msg) {
+function showToast(msg, { variant = '', duration = 1800 } = {}) {
   const el = document.getElementById('toast');
-  el.textContent = msg;
+  el.className = 'toast';
+  el.textContent = '';
+  if (variant === 'success') {
+    el.classList.add('success');
+    el.insertAdjacentHTML('beforeend', SVG_CHECK);
+  }
+  const span = document.createElement('span');
+  span.textContent = msg;
+  el.appendChild(span);
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+  toastTimer = setTimeout(() => el.classList.remove('show'), duration);
 }
 
 // ─── List rendering ─────────────────────────────────────────────────────
@@ -979,6 +987,8 @@ async function handleSelectChange(
 const SVG_X_SMALL = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 
 const SVG_WARN = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+
+const SVG_CHECK = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`;
 
 // Toggle a warn icon on a label-bearing element. Pass the element that holds
 // the label text (e.g. the span inside a <label>); the icon is appended after
@@ -2145,7 +2155,10 @@ if ('serviceWorker' in navigator) {
         worker.addEventListener('statechange', () => {
           // Only an update if a controller already existed at page load.
           if (worker.state === 'installed' && hadController) {
-            showToast('Update downloaded — reloading…');
+            showToast('Update installed — reloading to the latest version…', {
+              variant: 'success',
+              duration: 3000,
+            });
           }
         });
       };

@@ -916,7 +916,10 @@ header h1 {
   position: fixed;
   top: 1rem;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(-0.4rem);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   background: var(--pico-contrast-background, #1a1a1a);
   color: var(--pico-contrast-inverse, #fff);
   padding: 0.5rem 1.25rem;
@@ -925,13 +928,28 @@ header h1 {
   font-weight: 600;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, transform 0.2s;
   z-index: 100;
   white-space: nowrap;
 }
 
+.toast svg {
+  flex-shrink: 0;
+}
+
 .toast.show {
   opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Success variant — a bolder green pill for positive, high-signal events
+   (e.g. a downloaded app update) so they read clearly, not as a passing note. */
+.toast.success {
+  background: #16a34a;
+  color: #fff;
+  padding: 0.625rem 1.5rem;
+  font-size: 0.9375rem;
+  box-shadow: 0 6px 24px rgba(22, 163, 74, 0.45);
 }
 
 .install-banner {
