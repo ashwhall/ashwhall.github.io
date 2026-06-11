@@ -1275,6 +1275,7 @@ function renderGlobalTimes(job) {
       suffix: firstEnroute?.vehicle || '',
       value: firstEnroute?.time || '',
       readOnly: true,
+      dayOffset: firstEnroute ? Math.floor(firstEnroute.mins / 1440) : 0,
     }),
   );
 
@@ -1290,6 +1291,7 @@ function renderGlobalTimes(job) {
       suffix: firstScene?.vehicle || '',
       value: firstScene?.time || '',
       readOnly: true,
+      dayOffset: firstScene ? Math.floor(firstScene.mins / 1440) : 0,
     }),
   );
 }
