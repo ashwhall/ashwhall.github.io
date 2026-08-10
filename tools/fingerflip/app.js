@@ -20,7 +20,9 @@
     bailedTolerance: 30,       // deg, max(|Δbeta|,|Δgamma|) — bail detection on stored orientation
   };
 
-  const State = { IDLE: 'IDLE', ARMED: 'ARMED', RECORDING: 'RECORDING', LABELLING: 'LABELLING', CLASSIFYING: 'CLASSIFYING' };
+  // No post-throw state: a classified flip leaves the app ARMED with the result panel
+  // still on screen, so you can throw again straight away. Only LABELLING blocks.
+  const State = { IDLE: 'IDLE', ARMED: 'ARMED', RECORDING: 'RECORDING', LABELLING: 'LABELLING' };
 
   const els = {
     learnToggle: document.getElementById('learn-toggle'),
@@ -61,8 +63,6 @@
     resultTitle: document.getElementById('result-title'),
     resultSubtitle: document.getElementById('result-subtitle'),
     resultRows: document.getElementById('result-rows'),
-    resultActionsTop: document.getElementById('result-actions-top'),
-    resultDoneTopBtn: document.getElementById('result-done-top-btn'),
     statsTricks: document.getElementById('stats-tricks'),
     statsSamples: document.getElementById('stats-samples'),
     statsUnsaved: document.getElementById('stats-unsaved'),
@@ -71,6 +71,7 @@
   const app = {
     state: State.IDLE,
     holding: false,
+    showResult: false,
     learnMode: false,
     settings: { ...DEFAULTS },
     committed: { version: 1, tricks: [], samples: [] },
@@ -148,10 +149,11 @@
     render();
   }
 
-  function finishClassifying() {
+  // Wipe the previous throw's readout so the next capture starts from a blank slate.
+  function clearResult() {
+    app.showResult = false;
     app.pendingSample = null;
     app.viz = null;
-    setState(State.ARMED);
   }
 
   function render() {
@@ -161,18 +163,19 @@
     els.learnToggle.checked = app.learnMode;
 
     const showLabel = app.state === State.LABELLING;
-    const showResult = app.state === State.CLASSIFYING;
+    // The result panel sits below the throw button rather than replacing it, so the
+    // button never moves and the last readout stays readable while you throw again.
+    const showResult = app.showResult && !showLabel && app.state !== State.IDLE;
     els.labelScreen.hidden = !showLabel;
     els.resultScreen.hidden = !showResult;
-    els.resultActionsTop.hidden = !showResult;
 
     const isIdle = app.state === State.IDLE;
     const isArmed = app.state === State.ARMED;
     const isRecording = app.state === State.RECORDING;
 
-    els.primaryBtn.hidden = showLabel || showResult;
-    els.hint.hidden = showLabel || showResult;
-    els.stopBtn.hidden = showLabel || showResult || isIdle;
+    els.primaryBtn.hidden = showLabel;
+    els.hint.hidden = showLabel;
+    els.stopBtn.hidden = showLabel || isIdle;
     els.primaryBtn.classList.toggle('holding', app.holding);
 
     if (isIdle) {
@@ -186,11 +189,11 @@
         els.hint.textContent = 'Tap Start to arm motion capture.';
       }
     } else if (isArmed) {
-      els.primaryBtn.textContent = app.holding ? 'Release to throw' : 'Hold to throw';
+      els.primaryBtn.textContent = app.holding ? 'Release!' : (showResult ? 'Hold to throw again' : 'Hold to throw');
       els.primaryBtn.disabled = false;
       els.hint.textContent = app.holding
-        ? 'Holding. Let go of the button as you throw — capture starts on release.'
-        : 'Armed. Press and hold the button, then release it as you throw.';
+        ? 'Let go of the button as you throw — capture starts on release.'
+        : 'Press and hold, then release as you throw.';
     } else if (isRecording) {
       els.primaryBtn.textContent = 'Recording…';
       els.primaryBtn.disabled = true;
@@ -620,12 +623,13 @@
 
   function classifyAndShow(sample) {
     const top = classify(sample);
-    setState(State.CLASSIFYING);
+    app.showResult = true;
     if (top.length === 0) {
       els.resultTitle.textContent = 'No dataset';
       els.resultSubtitle.textContent = 'Add samples in Learn mode first.';
       els.resultRows.innerHTML = '';
       app.viz = null;
+      setState(State.ARMED);
       return;
     }
     const winner = top[0];
@@ -659,7 +663,7 @@
     }
     const matchSample = winner.id ? allSamples().find(s => s.id === winner.id) : null;
     app.viz = { current: sample, match: matchSample, label: winner.trick };
-    render();
+    setState(State.ARMED);
   }
 
   function appendResultRow(label, kind, total, shape, rotAxis, winner, ambiguous) {
@@ -822,8 +826,7 @@
     app.pendingSample.trick = name;
     if (difficulty != null) app.pendingSample.difficulty = difficulty;
     app.unsaved.push(app.pendingSample);
-    app.pendingSample = null;
-    app.viz = null;
+    clearResult();
     invalidateMedoids();
     saveLocal();
     setState(State.ARMED);
@@ -870,6 +873,7 @@
     attachMotion();
     acquireWakeLock();
     app.capture = newCapture();
+    clearResult();
     setState(State.ARMED);
   });
 
@@ -878,6 +882,7 @@
     releaseWakeLock();
     app.holding = false;
     app.capture = null;
+    clearResult();
     els.triggerFill.style.width = '0%';
     els.triggerFill.classList.remove('fired');
     setState(State.IDLE);
@@ -889,20 +894,33 @@
     if (app.state !== State.ARMED || app.holding) return;
     ev.preventDefault();
     app.holding = true;
+    app.holdStartedAt = performance.now();
+    // Drop the last throw's readout on press, so what's on screen always describes
+    // the throw in progress rather than the previous one.
+    clearResult();
     if (!app.capture) app.capture = newCapture();
     // Capture the pointer so the release still lands on the button once the finger slides off.
     try { els.primaryBtn.setPointerCapture(ev.pointerId); } catch (_) {}
     render();
   });
 
-  // pointercancel counts as a release too: a throw that the browser reads as an interrupted
-  // gesture should still start the capture — a spurious sample is cheaper than a missed flip.
+  // A real lift-off is pointerup. pointercancel also counts, because the throw motion can
+  // read as an interrupted gesture and a spurious sample beats a missed flip — but only
+  // after a brief hold, since browsers sometimes cancel immediately after the press.
+  const MIN_CANCEL_HOLD_MS = 150;
+
   for (const type of ['pointerup', 'pointercancel']) {
     els.primaryBtn.addEventListener(type, (ev) => {
       if (!app.holding) return;
       ev.preventDefault();
-      app.holding = false;
       try { els.primaryBtn.releasePointerCapture(ev.pointerId); } catch (_) {}
+      const heldMs = performance.now() - (app.holdStartedAt || 0);
+      if (type === 'pointercancel' && heldMs < MIN_CANCEL_HOLD_MS) {
+        app.holding = false;
+        render();
+        return;
+      }
+      app.holding = false;
       if (app.state !== State.ARMED) { render(); return; }
       play(app.popSound);
       startRecording();
@@ -1008,12 +1026,9 @@
   });
 
   els.discardBtn.addEventListener('click', () => {
-    app.pendingSample = null;
-    app.viz = null;
+    clearResult();
     setState(State.ARMED);
   });
-
-  els.resultDoneTopBtn.addEventListener('click', finishClassifying);
 
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 

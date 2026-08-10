@@ -20,7 +20,7 @@
     })();
   </script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-  <link rel="stylesheet" href="./app.css?v=34" />
+  <link rel="stylesheet" href="./app.css?v=35" />
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 </head>
 <body>
@@ -117,8 +117,15 @@
       <button class="secondary stop-btn" id="stop-btn" hidden>Stop</button>
     </section>
 
-    <section id="result-actions-top" hidden>
-      <button class="big-btn" id="result-done-top-btn">Done</button>
+    <section id="result-screen" hidden>
+      <h2 id="result-title">—</h2>
+      <p id="result-subtitle" class="muted"></p>
+      <table class="result-table">
+        <thead>
+          <tr><th>Trick</th><th>Total</th><th>Shape</th><th>Rot α/β/γ</th></tr>
+        </thead>
+        <tbody id="result-rows"></tbody>
+      </table>
     </section>
 
     <section id="viz-section" hidden>
@@ -144,17 +151,6 @@
       <button class="secondary" id="discard-btn">Discard</button>
     </section>
 
-    <section id="result-screen" hidden>
-      <h2 id="result-title">—</h2>
-      <p id="result-subtitle" class="muted"></p>
-      <table class="result-table">
-        <thead>
-          <tr><th>Trick</th><th>Total</th><th>Shape</th><th>Rot α/β/γ</th></tr>
-        </thead>
-        <tbody id="result-rows"></tbody>
-      </table>
-    </section>
-
     <footer class="stats-footer">
       <span id="stats-tricks">0 tricks</span> ·
       <span id="stats-samples">0 samples</span> ·
@@ -162,6 +158,6 @@
     </footer>
   </main>
 
-  <script src="./app.js?v=34"></script>
+  <script src="./app.js?v=35"></script>
 </body>
 </html>
