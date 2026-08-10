@@ -1,3 +1,12 @@
+/* Anything below that sets `display` on an element we toggle with the `hidden`
+   attribute beats the browser's own [hidden] rule, so hiding it would depend on
+   Pico's `[hidden]{display:none!important}` having loaded. When Pico was missing
+   the copy-vehicles modal appeared on launch over an empty list. Own the rule
+   here so it holds whenever this stylesheet does. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   padding-bottom: 3rem;
 }
