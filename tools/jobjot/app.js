@@ -330,55 +330,67 @@ function showView(name) {
 
 const levels = [];
 
-// Set when we call history.back() ourselves, so the popstate it causes isn't
-// mistaken for the user pressing back again.
-let selfPops = 0;
+// Each entry we push records how deep it is, so the history entry itself is
+// the source of truth. Counting our own navigations instead was what broke the
+// installed app: a browser tab has entries behind it and absorbs a miscount,
+// but a PWA launched from the home screen sits at the bottom of its stack, so
+// one extra step back leaves a blank window.
+function currentDepth() {
+  const d = history.state && history.state.d;
+  return typeof d === 'number' ? d : 0;
+}
 
 function openLevel(name, close) {
   levels.push({ name, close, closing: false });
-  history.pushState({ jj: name }, '');
+  history.pushState({ jj: name, d: levels.length }, '');
 }
 
 function closeTopLevel() {
-  if (levels.length) history.back();
+  // Never step past the app's own first entry — there may be nothing behind it.
+  if (currentDepth() > 0) history.back();
+  else reconcile();
 }
 
-window.addEventListener('popstate', () => {
-  if (selfPops > 0) {
-    selfPops--;
-    return;
+// Bring the UI into line with whatever entry we've landed on. Re-reads the
+// depth after every await, so presses that arrive mid-close are still honoured.
+async function reconcile() {
+  // Where the press wants us to end up. Captured before anything is restored.
+  const target = currentDepth();
+
+  // The browser has already spent an entry getting here. Put the stack back to
+  // the UI's depth straight away, so a second press while a close is still
+  // resolving has something to consume instead of stepping out of the app.
+  // Anything surplus is handed back at the end.
+  if (levels.length > target) {
+    const top = levels[levels.length - 1];
+    history.pushState({ jj: top.name, d: levels.length }, '');
   }
 
-  const level = levels[levels.length - 1];
+  while (levels.length > target) {
+    const level = levels[levels.length - 1];
+    // Already being closed — its confirm is on screen, and whoever is awaiting
+    // that will carry on from here.
+    if (level.closing) return;
 
-  // Nothing of ours is open — let the browser leave the app.
-  if (!level) return;
+    level.closing = true;
+    const closed = await Promise.resolve(level.close()).catch(() => true);
+    level.closing = false;
 
-  // The browser has already consumed an entry by the time we get here. Put one
-  // back straight away so the stack is never shallower than the UI is deep:
-  // otherwise a second press while a close is still resolving falls off the
-  // end of the stack and drops the user out of the app. The entry is consumed
-  // again below, once the level has actually agreed to close.
-  history.pushState({ jj: level.name }, '');
+    // Refused: the entry restored above already holds our place.
+    if (closed === false) return;
+    const i = levels.lastIndexOf(level);
+    if (i !== -1) levels.splice(i, 1);
+  }
 
-  // Already asking this level to close — its confirm is on screen. The push
-  // above is all that was needed.
-  if (level.closing) return;
+  // Sitting deeper than the UI — a level closed itself while its confirm
+  // absorbed a press. Hand one entry back; the popstate re-enters here until
+  // the two agree. The depth guard keeps this inside the app.
+  if (currentDepth() > levels.length && currentDepth() > 0) history.back();
+}
 
-  level.closing = true;
-  Promise.resolve(level.close())
-    .catch(() => true) // a closer that blew up shouldn't strand the stack
-    .then((closed) => {
-      level.closing = false;
-      if (closed === false) return; // refused: the restored entry stands
-      const i = levels.lastIndexOf(level);
-      if (i !== -1) levels.splice(i, 1);
-      selfPops++;
-      history.back();
-    });
-});
+window.addEventListener('popstate', reconcile);
 
-history.replaceState({ jj: 'list' }, '');
+history.replaceState({ jj: 'root', d: 0 }, '');
 
 // Returning from the edit view, whether by the on-screen arrow or the system
 // back button. Returns false to stay put.
