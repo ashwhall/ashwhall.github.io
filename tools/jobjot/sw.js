@@ -10,7 +10,7 @@ const APP_SHELL = [
   './',
   './index.html',
   './style.css',
-  '/tools/pico.min.css',
+  './pico.min.css',
   './app.js',
   './manifest.json',
   './build.json',

@@ -26,8 +26,16 @@
   </script>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#11191f" />
-  <link rel="stylesheet" href="/tools/pico.min.css" />
+  <link rel="stylesheet" href="pico.min.css" />
   <style>
+    /* Rules below that set `display` on an element we toggle with the `hidden`
+       attribute beat the browser's own [hidden] rule, so hiding it would depend
+       on Pico's `[hidden]{display:none!important}` having loaded. Own the rule
+       here instead. */
+    [hidden] {
+      display: none !important;
+    }
+
     body {
       padding-bottom: 5rem;
     }

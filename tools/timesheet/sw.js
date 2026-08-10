@@ -9,7 +9,7 @@ const CACHE_VERSION = 'timesheet-{{ site.time | date: "%s" }}';
 const APP_SHELL = [
   './',
   './index.html',
-  '/tools/pico.min.css',
+  './pico.min.css',
   './manifest.json',
   './build.json',
   '/public/favicon.ico',
