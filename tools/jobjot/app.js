@@ -345,47 +345,45 @@ function openLevel(name, close) {
   history.pushState({ jj: name, d: levels.length }, '');
 }
 
+// history.back() is asynchronous: the cursor and history.state don't move
+// until popstate fires. Two calls in one task therefore read the same stale
+// depth and BOTH traverse — which is what walked the installed app off the
+// bottom of its stack. Exactly one traversal of ours may be in flight.
+let selfTraversing = false;
+
 function closeTopLevel() {
-  // Never step past the app's own first entry — there may be nothing behind it.
-  if (currentDepth() > 0) history.back();
-  else reconcile();
+  if (!levels.length || selfTraversing) return;
+  selfTraversing = true;
+  history.back();
 }
 
-// Bring the UI into line with whatever entry we've landed on. Re-reads the
-// depth after every await, so presses that arrive mid-close are still honoured.
+// Bring the UI into line with whatever entry we've landed on. The depth is
+// re-read every pass, so presses arriving mid-close are still honoured.
+//
+// A closer that suspends must open its own level first (as leaveEdit does via
+// showConfirm) — otherwise, while it awaits, the UI is deeper than the history
+// and the next press has no entry of ours left to spend.
 async function reconcile() {
-  // Where the press wants us to end up. Captured before anything is restored.
-  const target = currentDepth();
+  selfTraversing = false;
 
-  // The browser has already spent an entry getting here. Put the stack back to
-  // the UI's depth straight away, so a second press while a close is still
-  // resolving has something to consume instead of stepping out of the app.
-  // Anything surplus is handed back at the end.
-  if (levels.length > target) {
-    const top = levels[levels.length - 1];
-    history.pushState({ jj: top.name, d: levels.length }, '');
-  }
-
-  while (levels.length > target) {
+  while (levels.length > currentDepth()) {
     const level = levels[levels.length - 1];
-    // Already being closed — its confirm is on screen, and whoever is awaiting
-    // that will carry on from here.
+    // Already being closed — its confirm is on screen, and whoever awaits that
+    // will carry on from here.
     if (level.closing) return;
 
     level.closing = true;
     const closed = await Promise.resolve(level.close()).catch(() => true);
     level.closing = false;
 
-    // Refused: the entry restored above already holds our place.
-    if (closed === false) return;
+    if (closed === false) {
+      // Refused: the browser already spent the entry, so buy it back.
+      history.pushState({ jj: level.name, d: levels.length }, '');
+      return;
+    }
     const i = levels.lastIndexOf(level);
     if (i !== -1) levels.splice(i, 1);
   }
-
-  // Sitting deeper than the UI — a level closed itself while its confirm
-  // absorbed a press. Hand one entry back; the popstate re-enters here until
-  // the two agree. The depth guard keeps this inside the app.
-  if (currentDepth() > levels.length && currentDepth() > 0) history.back();
 }
 
 window.addEventListener('popstate', reconcile);
