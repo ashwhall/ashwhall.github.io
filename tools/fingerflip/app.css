@@ -133,11 +133,15 @@ header h1 {
   margin: 1.5rem 0;
 }
 
+/* Sized for a thumb mid-throw, not for precision: fills most of the viewport so the
+   press and the release both land without looking at the screen. */
 .big-btn {
   width: 100%;
+  min-height: 45vh;
   padding: 1.25rem;
-  font-size: 1.25rem;
+  font-size: 1.75rem;
   font-weight: 600;
+  border-radius: 1rem;
   /* Hold-to-throw: no scroll/zoom gestures or text selection stealing the press. */
   touch-action: none;
   user-select: none;
@@ -148,7 +152,6 @@ header h1 {
 .big-btn.holding {
   background: #e24a4a;
   border-color: #e24a4a;
-  transform: scale(0.98);
 }
 
 .stop-btn {
@@ -163,7 +166,9 @@ header h1 {
   margin: 1rem 0;
 }
 
+/* Also tapped one-handed with the phone just caught — keep them thumb-sized. */
 .trick-buttons button {
+  min-height: 4rem;
   padding: 0.875rem;
   font-size: 1rem;
   text-align: left;
