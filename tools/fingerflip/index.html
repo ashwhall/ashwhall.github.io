@@ -20,7 +20,7 @@
     })();
   </script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-  <link rel="stylesheet" href="./app.css?v=33" />
+  <link rel="stylesheet" href="./app.css?v=34" />
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 </head>
 <body>
@@ -51,15 +51,7 @@
     <section id="settings-panel" class="settings-panel" hidden>
       <div class="settings-section">
         <label>
-          Free-fall threshold (m/s² — launch when |accel| drops below)
-          <input type="number" id="freefall-low-input" min="0.1" max="9.8" step="0.1" />
-        </label>
-        <label>
-          Free-fall frames (consecutive sub-threshold to confirm)
-          <input type="number" id="freefall-frames-input" min="1" max="30" step="1" />
-        </label>
-        <label>
-          Rotation launch (°/s — backup launch trigger if rotation builds first)
+          Spin gate (°/s — catch detection arms once peak |ω| passes half of this)
           <input type="number" id="rotation-launch-input" min="50" max="3000" step="10" />
         </label>
         <label>
@@ -114,14 +106,15 @@
 
     <section class="status-bar">
       <div class="status-pill" id="status-pill">IDLE</div>
-      <div class="trigger-bar" id="trigger-bar" aria-label="Trigger progress">
+      <div class="trigger-bar" id="trigger-bar" aria-label="Spin level">
         <div class="trigger-fill" id="trigger-fill"></div>
       </div>
     </section>
 
     <section class="action-section">
       <button class="big-btn" id="primary-btn">Start</button>
-      <p class="muted small" id="hint">Tap Start to arm motion capture. Flip the phone to record.</p>
+      <p class="muted small" id="hint">Tap Start to arm motion capture.</p>
+      <button class="secondary stop-btn" id="stop-btn" hidden>Stop</button>
     </section>
 
     <section id="result-actions-top" hidden>
@@ -169,6 +162,6 @@
     </footer>
   </main>
 
-  <script src="./app.js?v=33"></script>
+  <script src="./app.js?v=34"></script>
 </body>
 </html>

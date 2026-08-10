@@ -5,9 +5,7 @@
   const DATASET_URL = './data/tricks.json';
 
   const DEFAULTS = {
-    freefallLow: 3,            // m/s² — |accel| below this = airborne (free fall)
-    freefallFrames: 2,         // consecutive sub-threshold frames to confirm launch
-    rotationLaunch: 400,       // °/s — launch trigger; also gates catch-by-drop
+    rotationLaunch: 400,       // °/s — spin gate; catch-by-drop only arms once peak |ω| exceeds half of this
     catchOmegaDropFrac: 0.35,  // |ω| drops below peak × this = caught (hand grip kills spin)
     catchOmegaDropFrames: 2,   // consecutive drop frames to confirm catch
     minAirtimeMs: 100,         // reject jiggles shorter than this
@@ -29,8 +27,6 @@
     exportBtn: document.getElementById('export-btn'),
     settingsBtn: document.getElementById('settings-btn'),
     settingsPanel: document.getElementById('settings-panel'),
-    freefallLowInput: document.getElementById('freefall-low-input'),
-    freefallFramesInput: document.getElementById('freefall-frames-input'),
     rotationLaunchInput: document.getElementById('rotation-launch-input'),
     catchDropFracInput: document.getElementById('catch-drop-frac-input'),
     catchDropFramesInput: document.getElementById('catch-drop-frames-input'),
@@ -52,6 +48,7 @@
     statusPill: document.getElementById('status-pill'),
     triggerFill: document.getElementById('trigger-fill'),
     primaryBtn: document.getElementById('primary-btn'),
+    stopBtn: document.getElementById('stop-btn'),
     hint: document.getElementById('hint'),
     labelScreen: document.getElementById('label-screen'),
     labelBailedHint: document.getElementById('label-bailed-hint'),
@@ -73,6 +70,7 @@
 
   const app = {
     state: State.IDLE,
+    holding: false,
     learnMode: false,
     settings: { ...DEFAULTS },
     committed: { version: 1, tricks: [], samples: [] },
@@ -140,13 +138,13 @@
     return counts;
   }
 
+  function newCapture() {
+    return { ring: [], frames: [], startedAt: 0 };
+  }
+
   function setState(next) {
     app.state = next;
-    // CLASSIFYING continues listening for the next flip — init capture buffer + cooldown.
-    if (next === State.CLASSIFYING) {
-      if (!app.capture) app.capture = { ring: [], frames: [], startedAt: 0, freefallCount: 0 };
-      app.triggerCooldownUntil = performance.now() + 400;
-    }
+    if (next === State.ARMED && !app.capture) app.capture = newCapture();
     render();
   }
 
@@ -174,6 +172,8 @@
 
     els.primaryBtn.hidden = showLabel || showResult;
     els.hint.hidden = showLabel || showResult;
+    els.stopBtn.hidden = showLabel || showResult || isIdle;
+    els.primaryBtn.classList.toggle('holding', app.holding);
 
     if (isIdle) {
       if (app.isMobile === false) {
@@ -183,12 +183,14 @@
       } else {
         els.primaryBtn.textContent = 'Start';
         els.primaryBtn.disabled = false;
-        els.hint.textContent = 'Tap Start to arm. Toss the phone — free-fall starts the capture.';
+        els.hint.textContent = 'Tap Start to arm motion capture.';
       }
     } else if (isArmed) {
-      els.primaryBtn.textContent = 'Stop';
+      els.primaryBtn.textContent = app.holding ? 'Release to throw' : 'Hold to throw';
       els.primaryBtn.disabled = false;
-      els.hint.textContent = 'Armed. Toss the phone — capture starts the moment it goes airborne.';
+      els.hint.textContent = app.holding
+        ? 'Holding. Let go of the button as you throw — capture starts on release.'
+        : 'Armed. Press and hold the button, then release it as you throw.';
     } else if (isRecording) {
       els.primaryBtn.textContent = 'Recording…';
       els.primaryBtn.disabled = true;
@@ -197,8 +199,6 @@
 
     if (showLabel) renderLabelScreen();
 
-    els.freefallLowInput.value = app.settings.freefallLow;
-    els.freefallFramesInput.value = app.settings.freefallFrames;
     els.rotationLaunchInput.value = app.settings.rotationLaunch;
     els.catchDropFracInput.value = app.settings.catchOmegaDropFrac;
     els.catchDropFramesInput.value = app.settings.catchOmegaDropFrames;
@@ -320,42 +320,22 @@
 
     const rr = ev.rotationRate || { alpha: 0, beta: 0, gamma: 0 };
     const aLin = ev.acceleration || { x: 0, y: 0, z: 0 };
-    const aG = ev.accelerationIncludingGravity || aLin || { x: 0, y: 0, z: 0 };
     const frame = {
       t: now,
       accel: [aLin.x || 0, aLin.y || 0, aLin.z || 0],
       rotationRate: [rr.alpha || 0, rr.beta || 0, rr.gamma || 0],
       orientation: [0, 0, 0],
     };
-    // Free-fall detection uses gravity-inclusive magnitude: ~9.8 at rest, ~0 in flight.
-    const accelMag = Math.hypot(aG.x || 0, aG.y || 0, aG.z || 0);
     const omega = Math.hypot(frame.rotationRate[0], frame.rotationRate[1], frame.rotationRate[2]);
 
-    // trigger bar: blend free-fall proximity + rotation proximity. Either path can launch.
-    const ffLow = Math.max(0.01, app.settings.freefallLow);
+    // Bar shows live spin against the gate that arms catch detection.
     const rotLaunch = Math.max(1, app.settings.rotationLaunch);
-    const ffRatio = accelMag <= ffLow ? 1 : Math.max(0, ffLow / accelMag);
     const rotRatio = Math.min(1, omega / rotLaunch);
-    const fillRatio = Math.max(ffRatio, rotRatio);
-    els.triggerFill.style.width = (fillRatio * 100).toFixed(1) + '%';
-    els.triggerFill.classList.toggle('fired', fillRatio >= 1);
+    els.triggerFill.style.width = (rotRatio * 100).toFixed(1) + '%';
+    els.triggerFill.classList.toggle('fired', rotRatio >= 1);
 
-    if (app.state === State.ARMED || app.state === State.CLASSIFYING) {
+    if (app.state === State.ARMED) {
       pushRing(frame);
-      const inCooldown = app.triggerCooldownUntil && now < app.triggerCooldownUntil;
-      if (!inCooldown) {
-        if (accelMag < ffLow) {
-          app.capture.freefallCount = (app.capture.freefallCount || 0) + 1;
-        } else {
-          app.capture.freefallCount = 0;
-        }
-        const ffLaunch = app.capture.freefallCount >= app.settings.freefallFrames;
-        const rotLaunchHit = omega > rotLaunch;
-        if (ffLaunch || rotLaunchHit) {
-          play(app.popSound);
-          startRecording(frame);
-        }
-      }
     } else if (app.state === State.RECORDING) {
       app.capture.frames.push(frame);
       const elapsed = now - app.capture.startedAt;
@@ -383,18 +363,18 @@
   }
 
   function pushRing(frame) {
-    if (!app.capture) app.capture = { ring: [], frames: [], startedAt: 0, freefallCount: 0 };
+    if (!app.capture) app.capture = newCapture();
     app.capture.ring.push(frame);
     if (app.capture.ring.length > app.settings.prerollFrames) app.capture.ring.shift();
   }
 
-  function startRecording(triggerFrame) {
+  // Called on button release — the pre-roll ring holds the frames leading up to the throw.
+  function startRecording() {
     const ring = (app.capture && app.capture.ring) ? app.capture.ring.slice() : [];
     app.capture = {
       ring: [],
-      frames: ring.concat([triggerFrame]),
+      frames: ring,
       startedAt: performance.now(),
-      freefallCount: 0,
       peakOmega: 0,
       omegaDropCount: 0,
       startOrientation: app.lastOrientation ? { ...app.lastOrientation } : null,
@@ -432,8 +412,8 @@
     const endOrientation = app.lastOrientation ? { ...app.lastOrientation } : null;
     app.capture = null;
     if (!frames || frames.length < 4) {
+      app.capture = newCapture();
       setState(State.ARMED);
-      app.capture = { ring: [], frames: [], startedAt: 0, freefallCount: 0 };
       return;
     }
     const sample = framesToSample(frames);
@@ -881,25 +861,53 @@
   // ---------- wiring ----------
 
   els.primaryBtn.addEventListener('click', async () => {
-    if (app.state === State.IDLE) {
-      const granted = await requestMotionPermissionIfNeeded();
-      if (!granted) {
-        els.hint.textContent = 'Motion permission denied. Reload and accept the prompt.';
-        return;
-      }
-      attachMotion();
-      acquireWakeLock();
-      app.capture = { ring: [], frames: [], startedAt: 0, freefallCount: 0 };
-      setState(State.ARMED);
-    } else if (app.state === State.ARMED) {
-      detachMotion();
-      releaseWakeLock();
-      app.capture = null;
-      els.triggerFill.style.width = '0%';
-      els.triggerFill.classList.remove('fired');
-      setState(State.IDLE);
+    if (app.state !== State.IDLE) return;
+    const granted = await requestMotionPermissionIfNeeded();
+    if (!granted) {
+      els.hint.textContent = 'Motion permission denied. Reload and accept the prompt.';
+      return;
     }
+    attachMotion();
+    acquireWakeLock();
+    app.capture = newCapture();
+    setState(State.ARMED);
   });
+
+  els.stopBtn.addEventListener('click', () => {
+    detachMotion();
+    releaseWakeLock();
+    app.holding = false;
+    app.capture = null;
+    els.triggerFill.style.width = '0%';
+    els.triggerFill.classList.remove('fired');
+    setState(State.IDLE);
+  });
+
+  // Hold-to-throw: press and hold the big button, release it as the phone leaves your hand.
+  // Release is the launch trigger, so no free-fall/rotation detection is needed.
+  els.primaryBtn.addEventListener('pointerdown', (ev) => {
+    if (app.state !== State.ARMED || app.holding) return;
+    ev.preventDefault();
+    app.holding = true;
+    if (!app.capture) app.capture = newCapture();
+    // Capture the pointer so the release still lands on the button once the finger slides off.
+    try { els.primaryBtn.setPointerCapture(ev.pointerId); } catch (_) {}
+    render();
+  });
+
+  // pointercancel counts as a release too: a throw that the browser reads as an interrupted
+  // gesture should still start the capture — a spurious sample is cheaper than a missed flip.
+  for (const type of ['pointerup', 'pointercancel']) {
+    els.primaryBtn.addEventListener(type, (ev) => {
+      if (!app.holding) return;
+      ev.preventDefault();
+      app.holding = false;
+      try { els.primaryBtn.releasePointerCapture(ev.pointerId); } catch (_) {}
+      if (app.state !== State.ARMED) { render(); return; }
+      play(app.popSound);
+      startRecording();
+    });
+  }
 
   els.learnToggle.addEventListener('change', () => {
     app.learnMode = els.learnToggle.checked;
@@ -913,17 +921,6 @@
     els.settingsPanel.hidden = !els.settingsPanel.hidden;
   });
 
-  els.freefallLowInput.addEventListener('change', () => {
-    app.settings.freefallLow = clamp(+els.freefallLowInput.value || DEFAULTS.freefallLow, 0.1, 9.8);
-    saveLocal();
-    render();
-  });
-  els.freefallFramesInput.addEventListener('change', () => {
-    const v = parseInt(els.freefallFramesInput.value, 10);
-    app.settings.freefallFrames = Number.isFinite(v) ? clamp(v, 1, 30) : DEFAULTS.freefallFrames;
-    saveLocal();
-    render();
-  });
   els.rotationLaunchInput.addEventListener('change', () => {
     app.settings.rotationLaunch = clamp(+els.rotationLaunchInput.value || DEFAULTS.rotationLaunch, 50, 3000);
     saveLocal();
