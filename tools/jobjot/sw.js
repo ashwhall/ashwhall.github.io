@@ -2,7 +2,7 @@
 # Front matter makes Jekyll render this file. `site.time` is the build time,
 # so every GitHub Pages deploy gets a fresh CACHE_VERSION automatically.
 ---
-// JobJot service worker — cache-first for app shell.
+// JobJot service worker — network-first for app shell, cache-first for the rest.
 // CACHE_VERSION is injected at build time by Jekyll/GitHub Pages.
 
 const CACHE_VERSION = 'jobjot-{{ site.time | date: "%s" }}';
@@ -10,7 +10,7 @@ const APP_SHELL = [
   './',
   './index.html',
   './style.css',
-  './pico.min.css',
+  '/tools/pico.min.css',
   './app.js',
   './manifest.json',
   './build.json',
