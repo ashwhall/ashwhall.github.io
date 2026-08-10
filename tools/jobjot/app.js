@@ -314,23 +314,75 @@ function showView(name) {
   document.getElementById('config-view').hidden = name !== 'config';
 }
 
-document.getElementById('config-toggle').addEventListener('click', () => {
-  const configOpen = !document.getElementById('config-view').hidden;
-  if (configOpen) {
-    showView(editingJobId ? 'edit' : 'list');
-    if (!editingJobId) renderList();
-  } else {
-    renderConfigView();
-    showView('config');
+// ─── System back button ─────────────────────────────────────────────────
+// Views are toggled with `hidden` in one document, so nothing here ever added
+// a history entry. Android's back button had no app-level step to take and
+// walked off the end of the stack, leaving a blank window.
+//
+// Each level of depth — the edit view, the config view, a modal — owns one
+// history entry, and every close routes through history.back(). popstate is
+// then the single place anything actually closes, so the system button and the
+// on-screen controls cannot drift apart.
+//
+// popstate can't be cancelled: by the time it fires the entry is already gone.
+// A level that refuses to close (the missing-job-number confirm) pushes a
+// replacement entry to stay where it is.
+
+const levels = [];
+
+// Set when we call history.back() ourselves, so the popstate it causes isn't
+// mistaken for the user pressing back again.
+let selfPops = 0;
+
+function openLevel(name, close) {
+  levels.push({ name, close, closing: false });
+  history.pushState({ jj: name }, '');
+}
+
+function closeTopLevel() {
+  if (levels.length) history.back();
+}
+
+window.addEventListener('popstate', () => {
+  if (selfPops > 0) {
+    selfPops--;
+    return;
   }
+
+  const level = levels[levels.length - 1];
+
+  // Nothing of ours is open — let the browser leave the app.
+  if (!level) return;
+
+  // The browser has already consumed an entry by the time we get here. Put one
+  // back straight away so the stack is never shallower than the UI is deep:
+  // otherwise a second press while a close is still resolving falls off the
+  // end of the stack and drops the user out of the app. The entry is consumed
+  // again below, once the level has actually agreed to close.
+  history.pushState({ jj: level.name }, '');
+
+  // Already asking this level to close — its confirm is on screen. The push
+  // above is all that was needed.
+  if (level.closing) return;
+
+  level.closing = true;
+  Promise.resolve(level.close())
+    .catch(() => true) // a closer that blew up shouldn't strand the stack
+    .then((closed) => {
+      level.closing = false;
+      if (closed === false) return; // refused: the restored entry stands
+      const i = levels.lastIndexOf(level);
+      if (i !== -1) levels.splice(i, 1);
+      selfPops++;
+      history.back();
+    });
 });
 
-document.getElementById('config-back-btn').addEventListener('click', () => {
-  showView('list');
-  renderList();
-});
+history.replaceState({ jj: 'list' }, '');
 
-document.getElementById('back-btn').addEventListener('click', async () => {
+// Returning from the edit view, whether by the on-screen arrow or the system
+// back button. Returns false to stay put.
+async function leaveEdit() {
   // If the job was never persisted (user opened New job and did nothing),
   // discard silently with a toast rather than warning about missing fields.
   if (pendingJob) {
@@ -339,7 +391,7 @@ document.getElementById('back-btn').addEventListener('click', async () => {
     showView('list');
     renderList();
     showToast('Empty job discarded');
-    return;
+    return true;
   }
 
   const job = getJob(editingJobId);
@@ -351,11 +403,37 @@ document.getElementById('back-btn').addEventListener('click', async () => {
         confirmLabel: 'Return',
       },
     );
-    if (!ok) return;
+    if (!ok) return false;
   }
   editingJobId = null;
   showView('list');
   renderList();
+  return true;
+}
+
+function leaveConfig() {
+  showView(editingJobId ? 'edit' : 'list');
+  if (!editingJobId) renderList();
+  return true;
+}
+
+document.getElementById('config-toggle').addEventListener('click', () => {
+  const configOpen = !document.getElementById('config-view').hidden;
+  if (configOpen) {
+    closeTopLevel();
+  } else {
+    renderConfigView();
+    showView('config');
+    openLevel('config', leaveConfig);
+  }
+});
+
+document.getElementById('config-back-btn').addEventListener('click', () => {
+  closeTopLevel();
+});
+
+document.getElementById('back-btn').addEventListener('click', () => {
+  closeTopLevel();
 });
 
 document.getElementById('new-job-btn').addEventListener('click', () => {
@@ -363,6 +441,7 @@ document.getElementById('new-job-btn').addEventListener('click', () => {
   editingJobId = pendingJob.id;
   renderEditView();
   showView('edit');
+  openLevel('edit', leaveEdit);
 });
 
 document.getElementById('delete-btn').addEventListener('click', async () => {
@@ -380,8 +459,9 @@ document.getElementById('delete-btn').addEventListener('click', async () => {
     saveJobs();
   }
   editingJobId = null;
-  showView('list');
-  renderList();
+  // Unwind the edit level rather than switching view directly, so its history
+  // entry goes with it. leaveEdit finds no job now, so it won't re-prompt.
+  closeTopLevel();
   showToast('Job deleted');
 });
 
@@ -410,10 +490,20 @@ function buildModal({ title, body, actions, onMount }) {
     const actionsWrap = document.createElement('div');
     actionsWrap.className = 'modal-actions';
 
-    const close = (value) => {
+    // Buttons and Escape record their answer then unwind the history stack;
+    // `teardown` below is what actually removes the modal, so a dismissal by
+    // the system back button takes exactly the same path.
+    let answer;
+    const finish = (value) => {
+      answer = value;
+      closeTopLevel();
+    };
+
+    const teardown = () => {
       document.removeEventListener('keydown', onKey);
       backdrop.remove();
-      resolve(value);
+      resolve(answer === undefined ? null : answer);
+      return true;
     };
 
     for (const a of actions) {
@@ -422,7 +512,7 @@ function buildModal({ title, body, actions, onMount }) {
       btn.className = `small-btn ${a.className || 'secondary outline'}`;
       btn.textContent = a.label;
       btn.onclick = () =>
-        close(typeof a.value === 'function' ? a.value() : a.value);
+        finish(typeof a.value === 'function' ? a.value() : a.value);
       actionsWrap.appendChild(btn);
       if (a.primary) btn.dataset.primary = '1';
     }
@@ -430,11 +520,11 @@ function buildModal({ title, body, actions, onMount }) {
 
     backdrop.appendChild(modal);
     backdrop.addEventListener('click', (e) => {
-      if (e.target === backdrop) close(null);
+      if (e.target === backdrop) finish(null);
     });
 
     const onKey = (e) => {
-      if (e.key === 'Escape') close(null);
+      if (e.key === 'Escape') finish(null);
       if (e.key === 'Enter') {
         const primary = modal.querySelector('button[data-primary="1"]');
         if (primary && document.activeElement?.tagName !== 'TEXTAREA') {
@@ -446,7 +536,8 @@ function buildModal({ title, body, actions, onMount }) {
     document.addEventListener('keydown', onKey);
 
     document.body.appendChild(backdrop);
-    if (onMount) onMount(modal, close);
+    openLevel('dialog', teardown);
+    if (onMount) onMount(modal, finish);
   });
 }
 
@@ -814,6 +905,7 @@ function renderList() {
       editingJobId = j.id;
       renderEditView();
       showView('edit');
+      openLevel('edit', leaveEdit);
     };
     card.addEventListener('click', open);
     card.addEventListener('keydown', (e) => {
@@ -1549,6 +1641,10 @@ async function openCopyModal() {
     list.appendChild(row);
   });
   document.getElementById('copy-modal').hidden = false;
+  openLevel('copy-modal', () => {
+    closeCopyModal();
+    return true;
+  });
 }
 
 function closeCopyModal() {
@@ -1560,9 +1656,9 @@ document
   .addEventListener('click', openCopyModal);
 document
   .getElementById('copy-modal-cancel')
-  .addEventListener('click', closeCopyModal);
+  .addEventListener('click', closeTopLevel);
 document.getElementById('copy-modal').addEventListener('click', (e) => {
-  if (e.target.id === 'copy-modal') closeCopyModal();
+  if (e.target.id === 'copy-modal') closeTopLevel();
 });
 
 document
@@ -1589,7 +1685,8 @@ document
     next.vehicles = cloned;
     jobs.unshift(next);
     saveJobs();
-    closeCopyModal();
+    // Unwind the modal level only — we stay at edit depth, now on the new job.
+    closeTopLevel();
     editingJobId = next.id;
     renderEditView();
     showView('edit');
