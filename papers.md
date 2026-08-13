@@ -122,7 +122,7 @@ _A method for distributed training of deep neural networks specifically designed
 
 _Few-Shot Continuous Meta-Learning with Neural Networks. Thesis submitted for the Computer Science Honours, 2018._
 
-[Thesis](/download/honours-thesis.pdf) ・ [Literature Survey](https://ashwhall.github.io/download/honours-literature-survey.pdf) ・ [Directed Study](https://ashwhall.github.io/download/honours-directed-study-report.pdf)
+[Thesis](https://ashwhall.github.io/download/honours-thesis.pdf) ・ [Literature Survey](https://ashwhall.github.io/download/honours-literature-survey.pdf) ・ [Directed Study](https://ashwhall.github.io/download/honours-directed-study-report.pdf)
 
 ---
 
